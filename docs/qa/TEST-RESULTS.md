@@ -1,6 +1,6 @@
 # 검증 결과
 
-기준일: 2026-10-12 UTC. 최신 검증 소스 `d55d904` (implementation/local-release). 아래 이전 검사와 산출물 표는 당시 `9e77ea4`의 이력이며, 최신 산출물은 마지막 절을 따른다. 미검증을 통과로 표시하지 않는다. 최종 판정은 RELEASE-READINESS.md.
+기준일: 2026-10-12 UTC. 최신 검증 소스 `2abe54f` (implementation/local-release). 아래 이전 검사와 산출물 표는 당시 `9e77ea4`의 이력이며, 최신 산출물은 마지막 절을 따른다. 미검증을 통과로 표시하지 않는다. 최종 판정은 RELEASE-READINESS.md.
 
 ## 실행한 검사
 
@@ -50,7 +50,7 @@ APK에는 graphics-path와 DataStore 네이티브 라이브러리가 각각 arm6
 
 ## 남은 검증
 
-실기기2대 성능·메모리·30분 안정성·실제8h 이탈, TalkBack 실패 재검증과 음성, 실제 NO_FILL, 개인정보 선택 재열기 승인/검증, 실제 업로드키/AAB 기반 설치·업데이트·Play 내부 테스트·보고서, 국가/연령/계정 조건은 미완료다. 등록 직후 종료·저장 장애·시계·UMP 필요/불필요/거부/오류·네트워크 복구의 후속 통과는 OS-EDGE-RESULTS에 기록했다. 에뮬레이터의 am start -W 수치를 실기기 p95 또는 첫 조작 가능 시간으로 사용하지 않는다.
+실기기2대 성능·메모리·30분 안정성·실제8h 이탈, 실제 TalkBack 음성·한국어 발음, 실제 NO_FILL, 개인정보 선택 재열기 승인/검증, 실제 업로드키/AAB 기반 설치·업데이트·Play 내부 테스트·보고서, 국가/연령/계정 조건은 미완료다. 등록 직후 종료·저장 장애·시계·UMP 필요/불필요/거부/오류·네트워크 복구의 후속 통과는 OS-EDGE-RESULTS에 기록했다. 에뮬레이터의 am start -W 수치를 실기기 p95 또는 첫 조작 가능 시간으로 사용하지 않는다.
 
 ## 산출물 식별
 
@@ -81,7 +81,7 @@ APK v2 debug 인증서 SHA-256: `eae79a024121d184d267bfebcd14ebba54b39df6b795ff0
 후속 빌드 설정 검증: `:app:testDebugUnitTest :app:lintDebug :app:lintRelease` BUILD SUCCESSFUL(42초), 기존 단위23개·lint 각각 오류0/경고13 유지(`handoff-guard-checks.txt`). instrumentation 테스트 APK도 apksigner 확인 결과 APK Signature Scheme v2, Android Debug 인증서이며 앱 debug/benchmark와 같은 지문이다(`androidtest-signature-handoff.txt`). 배포용 업로드 키/Play App Signing 서명이 아니다.
 
 
-## 최신 검증 산출물 — d55d904
+## 검증 산출물 — d55d904 (후속 프로브 변경은 아래)
 
 검증 소스 전체 해시: `d55d904888c72677df004735adc83b32910ecf3c`. 후속 문서 변경은 런타임/APK를 바꾸지 않는다. 버전1/0.1.0, min26/target36, 도구/서명 종류는 앞 절과 같다. debug APK는 제품 런타임이 불변이므로 기존9e77ea4 산출물과 동일 해시다. benchmark 및 테스트 APK는 아래 파일이 최신이다.
 
@@ -103,3 +103,15 @@ APK v2 debug 인증서 SHA-256: `eae79a024121d184d267bfebcd14ebba54b39df6b795ff0
 별도 opt-in 결과: 실제 UMP 불필요/필요/거부/통신오류는 API26에서 통과했다. 개인정보 재열기 프로브는 자동 승인 검토가 거부 선택을 차단해 중단했다. TalkBack 프로브는 터치2회·키보드2회에서 초점 탐색 조건 실패, 원인 미확정이다. **기본35개 통과를 이 두 별도 프로브 통과로 해석하지 않는다.** 실제 NO_FILL은 미관찰이다. 자세한 실패·환경·복구·판정 한계는 [OS-EDGE-RESULTS](OS-EDGE-RESULTS.md).
 
 최종 정상 부팅에서는 접근성0/서비스null, 비행기 모드0, 자동시간1, font_scale1.0을 확인했다. host GPU에서 정상 앱·배너 화면을 다시 확인했지만 이전 그래픽 오류의 원인 해결이나 장기 안정성 통과를 의미하지 않는다. 마지막 C: 여유5.55GiB. 작업 에뮬레이터는 종료하며 API26/16KB 설치 파일은 보존한다.
+
+
+## 최신 TalkBack 독립 진단 및 회귀 — 2abe54f
+
+수정 범위는 androidTest의 AccessibilityServiceProbeTest와 진단 문서다. 제품 런타임·빌드 설정·의존성·경제·저장·광고 불변. debug/benchmark APK 해시는 위 d55d904 표와 동일하다. 새 테스트 APK는 1143297바이트, SHA-256 `abaa0ad1482d7994998a6e7ce55bf9650c6354c5b1d0711b3e6383d1854f5238`. Android Debug/v2 인증서 동일 검증 성공(talkback-final-test-signature.txt).
+
+- 실제16KB에서 홈·설정·도감 TalkBack 프로브 **1개 통과, 75.009초**: talkback-final16kb.txt 및 talkback-final-labels.txt. 접근성 이름/금액/강화 비용·부족 이유, 설정2개, 도감 잠김 설명을 실제 노드에서 읽고 앱의 정확한 탭만 활성화했다. 광고 클릭 없음.
+- 같은 최종 테스트 APK의 일반 core **35개 통과**: talkback-final-core35.txt. opt-in 실제 TalkBack1과 일반35를 구분한다.
+- 빌드/검사: talkback-full-build.txt(1분11초, unit23/lint), talkback-final-build.txt(1분7초, 최종 테스트APK/lint). debug/release 각각 오류0/경고13. 제품 APK 재해시 동일.
+- 기존4회 초점 실패의 직접 원인은 shell input이 접근성 InputFilter를 거치지 않는 검증 도구 입력 경로였다. 커널 키보드 경로에서 동일 앱의 실제 초점 이동을 확인하고 프로브를 수정했다. sysfs 읽기 권한·TalkBack bind·부팅 직후 준비 시간 실패도 따로 보존했다. [전체 원인과 RED/GREEN](TALKBACK-DIAGNOSIS.md).
+- 실제 음성/한국어 발음·실기기 성능/실제8h 등은 이 무음 에뮬레이터 결과로 통과시키지 않는다. 과거 host GPU 오류가 완전히 해결됐다는 뜻도 아니다.
+- 개인정보 양식 재검사는 부모 요청 이후 재시도/우회 없음. [CONSENT-APPROVAL-BLOCK](CONSENT-APPROVAL-BLOCK.md)에 실제 명령·대상·두 오류 원문·승인 질문을 기록했다. 검토자가 특정 승인 문구를 제시한 것은 아니다.

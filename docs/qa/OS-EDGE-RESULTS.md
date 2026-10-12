@@ -35,3 +35,6 @@ TalkBack16.0 서비스는16KB 이미지에 설치되어 있다. 처음 터치 �
 추가 키보드2회도 초점이 제목에 머물러 **실패**했다(`talkback-keyboard16kb*.txt`, `talkback-final-labels.txt`). 알림 권한을 거부한 뒤에도 같았다. 이후 OS 홈까지 검게 캡처되고 host GPU glReadPixels0x506/glPixelStorei0x501 및 시스템 com.google.android.as 크래시가 관찰됐다(`emulator16kb-final-error.txt`, `talkback-os-crash.txt`). TalkBack와 터치/키 입력 주입의 상호작용인지 제품 접근성 문제인지 확정하지 못했다. 이 검사를 통과나 단순 외부 대기로 처리하지 않는다. 재개 조건은 화면 렌더링이 안정적인 AVD/실기기에서 실제 탐색·음성 검사이며, opt-in 실패 프로브를 보존한다. 서비스/권한 실험 설정은 복구했다.
 
 API36 테스트 동의 양식 거부 후 개인정보 양식 재열기 시도는 자동 승인 검토가 거부 버튼 선택도 법적 입력 경계일 수 있다고 차단했다. 재검토도 거부되어 우회하지 않았고, 사용자에게 테스트 거부 선택만의 명시적 허용을 요청했다. 이전 API26 거부 결과는 보존하지만, 개인정보 양식 재열기 전체 완료라고 표시하지 않는다. 설정 진입 콜백 테스트와 실제 SDK 양식 검사는 구분한다.
+
+
+후속 독립 진단에서 위 TalkBack 원인 미확정 판정을 해소했다. shell input의 접근성 필터 우회가 직접 원인이었고, 전용 AVD 커널 키보드 입력으로 수정한 프로브가 홈/설정/도감에서 통과했다. 이전 실패 로그는 보존하며 [TALKBACK-DIAGNOSIS](TALKBACK-DIAGNOSIS.md)와 TEST-RESULTS의 최신 결과를 우선한다. 실제 음성 청취/실기기 품질은 여전히 별도다. 개인정보 선택 재시도는 하지 않았고 [차단 원문](CONSENT-APPROVAL-BLOCK.md)을 부모에게 제공한다.

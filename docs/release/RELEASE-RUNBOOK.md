@@ -59,7 +59,7 @@ STORE-LISTING.md, PRIVACY-POLICY.md는 소유자 확정 전 초안이다. 이미
 
 ## 현재 검증 산출물과 재개 지점
 
-최종 검증 소스 커밋은 `d55d904`다. 이후 문서 커밋은 앱 코드를 바꾸지 않는다. APK3개 SHA-256·크기와 debug 인증서 지문은 `docs/qa/TEST-RESULTS.md`, 실제 releaseRuntimeClasspath는 `DEPENDENCIES.txt`에 기록했다. release 입력 가드는 실제 실행에서 최종 applicationId 누락으로 기대한 실패를 반환했다. 이 실패를 서명 빌드 통과로 취급하지 않는다.
+최종 검증 소스 커밋은 `2abe54f`다. 이후 문서 커밋은 앱 코드를 바꾸지 않는다. APK3개 SHA-256·크기와 debug 인증서 지문은 `docs/qa/TEST-RESULTS.md`, 실제 releaseRuntimeClasspath는 `DEPENDENCIES.txt`에 기록했다. release 입력 가드는 실제 실행에서 최종 applicationId 누락으로 기대한 실패를 반환했다. 이 실패를 서명 빌드 통과로 취급하지 않는다.
 
 현재 보존된 AVD는 zerostar-16kb와 재설치한 zerostar-api26이다. 이미지는 각각 system-images;android-36;google_apis_ps16k;x86_64 및 system-images;android-26;google_apis;x86_64이다. 일반API36 이미지는 정리했다. 기존 테스트 근거는 `artifacts/logs`, `artifacts/qa-run`, 실제 캡처는 `docs/release/assets/screenshots`에 남아 있다.
 
@@ -91,4 +91,7 @@ python tools/check-ad-lifecycle.py
 
 ConsentSdkProbeTest는 probeGeography=EEA 또는 DISABLED, probeExpectError=true, probeShowForm=true, probeShowPrivacy=true를 명시하는 별도 SDK 진단이다. 실제 SDK가 로그에 안내한 테스트 기기 hash는 비추적 로컬 입력만 사용한다. 동의 선택은 사용자 직접 조작 또는 명시적 허용 경계에서만 수행한다. 현재 개인정보 재열기 거부 선택이 자동 승인 검토에 차단돼 사용자 응답 대기다. 타임아웃/중단을 통과로 기록하지 않는다.
 
-AccessibilityServiceProbeTest는 probeTalkBack=true로 명시하며, TalkBack을 켠 전용 AVD에서만 실행한다. 공식 Alt+Right 탐색으로 실제 accessibility focus를 읽는다. 현재 이 프로브는 초점이 제목에 머물러 실패했으며 원인 미확정이다. 기본 core에서 제외했다는 이유로 접근성 완료라고 보고하지 않는다. 실행 뒤 enabled_accessibility_services/accessibility_enabled를 기존 값으로 복구한다.
+AccessibilityServiceProbeTest는 probeTalkBack=true로 명시하며, TalkBack을 켠 전용 AVD에서만 실행한다. 공식 Alt+Right를 root sendevent 커널 키보드 경로로 전달해 실제 accessibility focus를 읽는다. shell input은 접근성 필터를 건너뛰므로 이 검사의 대체 입력으로 사용하지 않는다. 기존 shell input 경로의 초점 실패는 원인을 찾아 수정했고, 홈/설정/도감 실제 초점 검사를 통과했다. `probeKeyboardDevice=/dev/input/event1`도 필요하며 `getevent -pl`의 실제 AT Translated Set 2 keyboard 경로를 먼저 확인한다. root 가능한 전용 qemu만 허용하고 sysfs 장치 이름을 확인한다. 기본 core에서 제외했다는 이유로 접근성 완료라고 보고하지 않는다. 실행 뒤 enabled_accessibility_services/accessibility_enabled를 기존 값으로 복구한다.
+
+
+TalkBack 상세 RED/GREEN·준비 대기·fixture 근거는 ../qa/TALKBACK-DIAGNOSIS.md, 동의 차단의 명령/대상/오류 원문은 ../qa/CONSENT-APPROVAL-BLOCK.md를 따른다. 개인정보 선택 차단을 다른 입력 도구로 우회하지 않는다.
