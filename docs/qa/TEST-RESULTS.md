@@ -1,6 +1,6 @@
 # 검증 결과
 
-기준일: 2026-10-12 UTC. 제품 코드 커밋 `9e77ea4` (implementation/local-release). 미검증을 통과로 표시하지 않는다. 최종 판정은 RELEASE-READINESS.md.
+기준일: 2026-10-12 UTC. 최신 검증 소스 `d55d904` (implementation/local-release). 아래 이전 검사와 산출물 표는 당시 `9e77ea4`의 이력이며, 최신 산출물은 마지막 절을 따른다. 미검증을 통과로 표시하지 않는다. 최종 판정은 RELEASE-READINESS.md.
 
 ## 실행한 검사
 
@@ -21,7 +21,7 @@
 | 실제 OS force-stop/재실행 | 20회 통과, 강화1 유지 | force-stop20.txt / artifacts/qa-run/force-stop20.json |
 | 실제 OS 배경/복귀 | 20회 통과, 설정/구매/정산 불변값 | background20.txt / artifacts/qa-run/background20.json |
 | 실제 재부팅 | API26 강화1 유지 및81초×3별빛 정산 | api26-offline-purchase.json→api26-after-reboot.json |
-| 실제 오프라인 진행 | 기본 경로 없음, ping Network is unreachable, 강화1→2 저장·누적-잔액45000milli | api26-offline-routes.txt / api26-offline-ping.txt / api26-verified-offline-purchase.json |
+| 이전 오프라인 시도 | 구매 저장은 확인했으나 전체 통신 차단 증거 불충분. OS-EDGE-RESULTS의 IPv4/IPv6 후속 결과로 대체 | api26-offline-routes.txt / api26-offline-ping.txt / api26-verified-offline-purchase.json |
 | 실제 테스트 배너 | Google Test Ad 표시, 경계 분리 관찰 | artifacts/screens/growth-360.png, banner-360.png, banner-ui.xml |
 | 실제 화면 | 홈/성장/도감/설정4장, 육안 확인 | docs/release/assets/screenshots |
 
@@ -50,7 +50,7 @@ APK에는 graphics-path와 DataStore 네이티브 라이브러리가 각각 arm6
 
 ## 남은 검증
 
-실기기2대 성능·메모리·30분 안정성·실제8h 이탈, TalkBack 음성/순서, 등록 직후 OS 종료 반복, 동의 필요/거부/정보갱신오류/선택변경의 실제 UMP 모든 분기, no-fill/네트워크복구 누수, 실제 업로드키/AAB 기반 설치·업데이트·Play 내부 테스트·보고서, 국가/연령/계정 조건은 미완료다. 에뮬레이터의 am start -W 수치를 실기기 p95 또는 첫 조작 가능 시간으로 사용하지 않는다.
+실기기2대 성능·메모리·30분 안정성·실제8h 이탈, TalkBack 실패 재검증과 음성, 실제 NO_FILL, 개인정보 선택 재열기 승인/검증, 실제 업로드키/AAB 기반 설치·업데이트·Play 내부 테스트·보고서, 국가/연령/계정 조건은 미완료다. 등록 직후 종료·저장 장애·시계·UMP 필요/불필요/거부/오류·네트워크 복구의 후속 통과는 OS-EDGE-RESULTS에 기록했다. 에뮬레이터의 am start -W 수치를 실기기 p95 또는 첫 조작 가능 시간으로 사용하지 않는다.
 
 ## 산출물 식별
 
@@ -79,3 +79,27 @@ APK v2 debug 인증서 SHA-256: `eae79a024121d184d267bfebcd14ebba54b39df6b795ff0
 원래 검증 APK3개의 해시·debug 서명·기기 결과는 위 표 그대로9e77ea4 소스 빌드에 귀속된다. 출시 서명 AAB는 계속 미생성이다.
 
 후속 빌드 설정 검증: `:app:testDebugUnitTest :app:lintDebug :app:lintRelease` BUILD SUCCESSFUL(42초), 기존 단위23개·lint 각각 오류0/경고13 유지(`handoff-guard-checks.txt`). instrumentation 테스트 APK도 apksigner 확인 결과 APK Signature Scheme v2, Android Debug 인증서이며 앱 debug/benchmark와 같은 지문이다(`androidtest-signature-handoff.txt`). 배포용 업로드 키/Play App Signing 서명이 아니다.
+
+
+## 최신 검증 산출물 — d55d904
+
+검증 소스 전체 해시: `d55d904888c72677df004735adc83b32910ecf3c`. 후속 문서 변경은 런타임/APK를 바꾸지 않는다. 버전1/0.1.0, min26/target36, 도구/서명 종류는 앞 절과 같다. debug APK는 제품 런타임이 불변이므로 기존9e77ea4 산출물과 동일 해시다. benchmark 및 테스트 APK는 아래 파일이 최신이다.
+
+| 최신 산출물 | 바이트 | SHA-256 |
+|---|---:|---|
+| app/build/outputs/apk/debug/app-debug.apk | 22450869 | `19c21e51fa8b7e50440d344b3574cc1d0891f7b98970a28a653d8082ebbc39db` |
+| app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk | 1138047 | `28357e81d29fed68f38d56d2e13d4a638faf20dccdb3a68dad5e05b106ee0b26` |
+| app/build/outputs/apk/benchmark/app-benchmark.apk | 4482036 | `bddd34ce51a133e4624b52c854125f5c8eeedcff33de920cbf8d0ed4e4b3a31d` |
+
+| 최종 재검사 | 결과 | artifacts/logs 근거 |
+|---|---|---|
+| debug/test/benchmark 빌드·단위·린트 | BUILD SUCCESSFUL,46초. 단위23/실패0/오류0, lint debug/release 각각 오류0/경고13 | reviewed-final-build.txt 및 app/build XML |
+| 실제16KB 최종 APK 기본 검사 | **35개 통과**,35.379초. PAGE_SIZE16384, 동일 최종 앱/테스트 APK 재설치 후 실행 | reviewed-core35-16kb.txt |
+| 출시 버전 입력 가드 | 3/3 기대한 거부 통과, 출시 번들 생성 없음 | reviewed-release-guard.txt |
+| APK3개 인증서 | Android Debug, v2 검증 성공. SHA256 지문 앞 절과 동일 | reviewed-debug/benchmark/test-signature.txt |
+| debug/benchmark native 및 ZIP | native 각8개 ELF LOAD16KB 및 ZIP16KB 통과. RELRO 보조 한계는 앞 절 유지 | reviewed-debug/benchmark-native.json, *-zipalign.txt |
+| 최종 benchmark 실행 | 실제16KB 설치/실행, 프로세스 유지, 복귀 안내·홈·Google Test Ad 화면 확인. crash buffer 비어 있음 | reviewed-benchmark-launch.txt, reviewed-benchmark-flags.txt, reviewed-crashes.txt; screens/reviewed-benchmark16kb*.png |
+
+별도 opt-in 결과: 실제 UMP 불필요/필요/거부/통신오류는 API26에서 통과했다. 개인정보 재열기 프로브는 자동 승인 검토가 거부 선택을 차단해 중단했다. TalkBack 프로브는 터치2회·키보드2회에서 초점 탐색 조건 실패, 원인 미확정이다. **기본35개 통과를 이 두 별도 프로브 통과로 해석하지 않는다.** 실제 NO_FILL은 미관찰이다. 자세한 실패·환경·복구·판정 한계는 [OS-EDGE-RESULTS](OS-EDGE-RESULTS.md).
+
+최종 정상 부팅에서는 접근성0/서비스null, 비행기 모드0, 자동시간1, font_scale1.0을 확인했다. host GPU에서 정상 앱·배너 화면을 다시 확인했지만 이전 그래픽 오류의 원인 해결이나 장기 안정성 통과를 의미하지 않는다. 마지막 C: 여유5.55GiB. 작업 에뮬레이터는 종료하며 API26/16KB 설치 파일은 보존한다.

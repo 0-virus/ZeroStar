@@ -38,7 +38,9 @@
 JDK21, Gradle8.13 wrapper, SDK platform36 / build-tools35.0.0을 사용한다. `local.properties`에 SDK 경로를 설정한다. 현재 로컬 SDK는 `.tools/android-sdk`다. 설치와 약관은 사용자 준비 문서 참조.
 
 ```powershell
-./gradlew.bat -g .tools/gradle-network :app:assembleDebug :app:testDebugUnitTest :app:lintDebug --max-workers=2
+./gradlew.bat -g .tools/gradle-network :app:assembleDebug :app:testDebugUnitTest :app:lintDebug --max-workers=1 --no-daemon '-Dorg.gradle.jvmargs=-Xmx1g' '-Pkotlin.compiler.execution.strategy=in-process'
 ```
 
 APK: `app/build/outputs/apk/debug/app-debug.apk`. 테스트 광고와 임시 `.debug` 패키지이며 출시본이 아니다. 기기 연결 후 `:app:connectedDebugAndroidTest`로 주요 UI·저장 테스트를 실행한다. 실제 장치 실행 없이 구현/빌드 성공을 제품 출시 성공으로 처리하지 않는다.
+
+추가 검증: [OS/광고 경계 결과](docs/qa/OS-EDGE-RESULTS.md). 빌드할 때 작업 AVD를 종료해 Windows 메모리 부족을 피한다. 최종 소스·APK 해시는 TEST-RESULTS를 따른다.

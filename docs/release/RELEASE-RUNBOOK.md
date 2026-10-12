@@ -9,8 +9,8 @@ Windows PowerShell, JDK 21.0.10(소스/JVM target17), Gradle8.13 wrapper, AGP8.1
 SDK는 현재 `.tools/android-sdk`, 로컬 Gradle 캐시는 `.tools/gradle-network`이고 모두 Git 비추적이다. 다른 컴퓨터에서는 공식 SDK를 설치한 후 해당 절대 경로를 `local.properties`의 sdk.dir에 설정한다. SDK 약관은 소유자가 직접 검토·동의한다. JDK/SDK가 준비되고 의존성을 다운로드할 네트워크가 필요하다.
 
 ```powershell
-./gradlew.bat -g .tools/gradle-network :app:assembleDebug :app:testDebugUnitTest :app:lintDebug :app:lintRelease :app:assembleDebugAndroidTest :app:assembleBenchmark --max-workers=2
-./gradlew.bat -g .tools/gradle-network :app:connectedDebugAndroidTest --max-workers=2
+./gradlew.bat -g .tools/gradle-network :app:assembleDebug :app:testDebugUnitTest :app:lintDebug :app:lintRelease :app:assembleDebugAndroidTest :app:assembleBenchmark --max-workers=1 --no-daemon '-Dorg.gradle.jvmargs=-Xmx1g' '-Pkotlin.compiler.execution.strategy=in-process'
+./gradlew.bat -g .tools/gradle-network :app:connectedDebugAndroidTest --max-workers=1 --no-daemon '-Dorg.gradle.jvmargs=-Xmx1g' '-Pkotlin.compiler.execution.strategy=in-process'
 ```
 
 두 번째 명령은 승인된 기기 또는 부팅된 에뮬레이터가 필수다. API26 32개, API36 일반31개, API36 실제16KB33개 통과. 별도 `verification` 빌드는 같은 순수 소스·저장소 테스트를 JVM에서 실행하는 검증 도구이며 제품 모듈이 아니다. Windows 호스트 테스트만 DataStore JVM artifact를 사용하고 장치 테스트는 Android artifact를 사용한다.
@@ -30,7 +30,7 @@ SDK는 현재 `.tools/android-sdk`, 로컬 Gradle 캐시는 `.tools/gradle-netwo
 환경변수 입력 후:
 
 ```powershell
-./gradlew.bat -g .tools/gradle-network :app:verifyReleaseConfiguration :app:testDebugUnitTest :app:lintRelease :app:assembleRelease :app:bundleRelease --max-workers=2
+./gradlew.bat -g .tools/gradle-network :app:verifyReleaseConfiguration :app:testDebugUnitTest :app:lintRelease :app:assembleRelease :app:bundleRelease --max-workers=1 --no-daemon '-Dorg.gradle.jvmargs=-Xmx1g' '-Pkotlin.compiler.execution.strategy=in-process'
 Get-FileHash app/build/outputs/bundle/release/app-release.aab -Algorithm SHA256
 ```
 
@@ -59,12 +59,36 @@ STORE-LISTING.md, PRIVACY-POLICY.md는 소유자 확정 전 초안이다. 이미
 
 ## 현재 검증 산출물과 재개 지점
 
-제품 소스 커밋은 `9e77ea4`다. 이후 문서 커밋은 앱 코드를 바꾸지 않는다. APK3개 SHA-256·크기와 debug 인증서 지문은 `docs/qa/TEST-RESULTS.md`, 실제 releaseRuntimeClasspath는 `DEPENDENCIES.txt`에 기록했다. release 입력 가드는 실제 실행에서 최종 applicationId 누락으로 기대한 실패를 반환했다. 이 실패를 서명 빌드 통과로 취급하지 않는다.
+최종 검증 소스 커밋은 `d55d904`다. 이후 문서 커밋은 앱 코드를 바꾸지 않는다. APK3개 SHA-256·크기와 debug 인증서 지문은 `docs/qa/TEST-RESULTS.md`, 실제 releaseRuntimeClasspath는 `DEPENDENCIES.txt`에 기록했다. release 입력 가드는 실제 실행에서 최종 applicationId 누락으로 기대한 실패를 반환했다. 이 실패를 서명 빌드 통과로 취급하지 않는다.
 
-현재 보존된 AVD는 `.tools/avd/zerostar-16kb`이고 이미지 패키지는 `system-images;android-36;google_apis_ps16k;x86_64`다. API26/일반API36 이미지와 작업용 AVD는 공간 회수 후 정리했으므로 필요하면 공식 SDK 도구로 다시 설치한다. 기존 테스트 근거는 `artifacts/logs`, `artifacts/qa-run`, 실제 캡처는 `docs/release/assets/screenshots`에 남아 있다.
+현재 보존된 AVD는 zerostar-16kb와 재설치한 zerostar-api26이다. 이미지는 각각 system-images;android-36;google_apis_ps16k;x86_64 및 system-images;android-26;google_apis;x86_64이다. 일반API36 이미지는 정리했다. 기존 테스트 근거는 `artifacts/logs`, `artifacts/qa-run`, 실제 캡처는 `docs/release/assets/screenshots`에 남아 있다.
 
-PowerShell에서 ANDROID_HOME/ANDROID_SDK_ROOT를 `.tools/android-sdk` 절대 경로, ANDROID_AVD_HOME을 `.tools/avd` 절대 경로로 설정한다. 작업용 에뮬레이터는 `emulator.exe -avd zerostar-16kb -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader -feature -Vulkan -memory 2048 -cores 2`로 실행했다. Windows 백그라운드 실행은 Start-Process -WindowStyle Hidden을 사용한다. `adb shell getconf PAGE_SIZE`는16384여야 한다. 기기 선택과 충분한 디스크를 먼저 확인한다.
+PowerShell에서 ANDROID_HOME/ANDROID_SDK_ROOT를 `.tools/android-sdk` 절대 경로, ANDROID_AVD_HOME을 `.tools/avd` 절대 경로로 설정한다. 작업용 에뮬레이터는 `emulator.exe -avd zerostar-16kb -no-window -no-audio -no-boot-anim -no-snapshot -gpu host -feature -Vulkan -memory 1536 -cores 2`로 실행했다. Windows 백그라운드 실행은 Start-Process -WindowStyle Hidden을 사용한다. `adb shell getconf PAGE_SIZE`는16384여야 한다. 기기 선택과 충분한 디스크를 먼저 확인한다.
 
 Gradle connected 검사는 종료 후 테스트 앱을 정리할 수 있다. adb instrumentation을 직접 재실행하려면 최종 app-debug.apk와 app-debug-androidTest.apk를 먼저 설치하고 `adb shell pm list instrumentation`의 실제 runner를 사용한다. 검사 종료 시 임시 화면 크기·density·font_scale을 복구한다.
 
-후속 인수인계 감사에서 release 버전 입력 가드를 보완했다. 이제 ZEROSTAR_VERSION_CODE/NAME도 명시해야 한다. 회귀 검사는 python tools/check-release-guard.py로 실행한다. 기존 APK는9e77ea4 빌드이고 후속 가드 수정으로 재생성하지 않았다. 독립 추가 검증과 사용자 차단의 구분은 RELEASE-READINESS 마지막 절을 따른다.
+후속 인수인계 감사에서 release 버전 입력 가드를 보완했다. 이제 ZEROSTAR_VERSION_CODE/NAME도 명시해야 한다. 회귀 검사는 python tools/check-release-guard.py로 실행한다. 후속 독립 검사 뒤 d55d904에서 APK를 다시 빌드했다. 최신 해시는 TEST-RESULTS 마지막 절을 따른다. 독립 추가 검증과 사용자 차단의 구분은 RELEASE-READINESS 마지막 절을 따른다.
+
+
+## OS 경계 검사 / opt-in 진단
+
+빌드와 AVD를 동시에 실행하지 않는다. 이 Windows 호스트에서 software GPU는 종료/commit 메모리 소진, host GPU는 TalkBack 검사 이후 그래픽 오류가 관찰됐다. host GPU는 core35와 API26 반복 검사에서 통과했지만 안정성이 보장된 환경은 아니다. 정상 화면/OS 상태를 확인하고 실패를 제품 통과로 치환하지 않는다.
+
+최종 APK 두 개를 설치한 뒤 일반 core 검사35개:
+
+```powershell
+$adb='.tools/android-sdk/platform-tools/adb.exe'
+& $adb -s emulator-5554 install -r app/build/outputs/apk/debug/app-debug.apk
+& $adb -s emulator-5554 install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+& $adb -s emulator-5554 shell am instrument -w -r -e notClass 'com.zerostar.game.ConsentSdkProbeTest,com.zerostar.game.AccessibilityServiceProbeTest' com.example.zerostar.debug.test/androidx.test.runner.AndroidJUnitRunner
+python tools/check-device-edges.py --mode registration --count 20
+python tools/check-device-edges.py --mode storage
+python tools/check-device-edges.py --mode clock
+python tools/check-ad-lifecycle.py
+```
+
+파이썬 도구는 전용 AVD 이름/qemu/debug 패키지를 검사하며 게임 테스트 데이터를 덮어쓴다. 개인 기기에 사용하지 않는다. 광고 도구는 zerostar-api26 전용이다. root 가능한 전용 이미지가 필요하고 시간·네트워크 설정을 복구한다.
+
+ConsentSdkProbeTest는 probeGeography=EEA 또는 DISABLED, probeExpectError=true, probeShowForm=true, probeShowPrivacy=true를 명시하는 별도 SDK 진단이다. 실제 SDK가 로그에 안내한 테스트 기기 hash는 비추적 로컬 입력만 사용한다. 동의 선택은 사용자 직접 조작 또는 명시적 허용 경계에서만 수행한다. 현재 개인정보 재열기 거부 선택이 자동 승인 검토에 차단돼 사용자 응답 대기다. 타임아웃/중단을 통과로 기록하지 않는다.
+
+AccessibilityServiceProbeTest는 probeTalkBack=true로 명시하며, TalkBack을 켠 전용 AVD에서만 실행한다. 공식 Alt+Right 탐색으로 실제 accessibility focus를 읽는다. 현재 이 프로브는 초점이 제목에 머물러 실패했으며 원인 미확정이다. 기본 core에서 제외했다는 이유로 접근성 완료라고 보고하지 않는다. 실행 뒤 enabled_accessibility_services/accessibility_enabled를 기존 값으로 복구한다.
