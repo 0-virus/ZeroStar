@@ -8,7 +8,7 @@ sourceSets {
         kotlin.srcDir("../app/src/main/java")
         kotlin.include("com/zerostar/game/game/**", "com/zerostar/game/data/**", "com/zerostar/game/ads/AdsGate.kt")
     }
-    test { kotlin.srcDir("../app/src/test/java"); kotlin.exclude("**/GameRepositoryTest.kt", "**/LifecycleSaveTest.kt") }
+    test { kotlin.srcDir("../app/src/test/java") }
 }
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
@@ -18,5 +18,6 @@ dependencies {
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
 }
 tasks.test { testLogging { events("passed", "failed", "skipped"); showStandardStreams = true } }
+
 
 
