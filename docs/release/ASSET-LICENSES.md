@@ -9,7 +9,12 @@
 | 6단계·6종 픽셀 별 | ZeroStar PixelStar.kt 직접 작성 | 외부 이미지 복제 없음 | 팔레트·장식 자체 구현 |
 | 강화·성장·도감 음향 | tools/generate-sounds.cjs 직접 합성 | 샘플 음원 사용 없음 | 22,050Hz mono PCM WAV |
 | 디자인 토큰 | 로컬 ZeroVerse DESIGN-SYSTEM §1~5 및 CSS 읽기 참고 | 크림·잉크·산호·황혼 원칙 참조. 원본 코드/자산 수정 없음 | Android 재구성 |
+| 스토어 아이콘/대표 이미지 | tools/generate-store-art.py로 직접 제작 | 원본 픽셀 도형과 번들 OFL 글꼴로 래스터화 | docs/release/assets/*.png, 실제 앱 캡처 아님 |
+
 
 AndroidX, Kotlin, kotlinx: Apache 2.0 계열. JUnit: EPL 1.0. Google Mobile Ads/UMP는 Google SDK 이용약관 적용. 정확한 전이 의존성 목록은 `:app:dependencies --configuration releaseRuntimeClasspath`로 추출해 최종 버전과 함께 재검토한다. 광고 SDK 전이 라이브러리의 데이터 처리도 개인정보 신고에 포함한다.
 
 출시 전 최종 브랜드·디자인 사용 권리는 소유자가 확인해야 한다. 위 목록은 권리 법률 검토 완료를 의미하지 않는다.
+
+
+기본 고정 의존성과 전이 목록은 DEPENDENCIES.txt, 최종 APK의 native 목록은 docs/qa/TEST-RESULTS.md에 기록한다. AndroidX graphics-path 및 DataStore의 .so가 있으므로 순수 Kotlin만 배포된다고 주장하지 않는다.
