@@ -1,6 +1,6 @@
 # 광고·동의 검증
 
-2026-10-12 UTC. 광고 통합 구현과 실제 Google Test Ad 표시·SDK 계약 검증 완료. UMP 필요/불필요/거부/정보 갱신 오류와 통신 복구를 추가 확인했다. 개인정보 재열기·실제 NO_FILL·실기기 성능·계정 설정은 미완료. 출시 준비 완료 아님.
+2026-10-12 UTC. 광고 통합 구현과 실제 Google Test Ad 표시·SDK 계약 검증 완료. UMP 필요/불필요/거부/정보 갱신 오류와 통신 복구를 추가 확인했다. 개인정보 양식 재열기도 확인했다. 재열린 양식의 정상 닫기·실제 NO_FILL·실기기 성능·계정 설정은 미완료. 출시 준비 완료 아님.
 
 - 고정 버전: Google Mobile Ads Next-Gen 1.5.0, UMP 4.0.0. 레거시 Ads·미디에이션·추가 분석 SDK 없음.
 - debug/benchmark: Google 공식 배너 테스트 앱·단위 ID. release: 환경변수의 실제 ID 필수, 테스트 publisher ID를 빌드 가드에서 거부.
@@ -43,6 +43,9 @@ debug의 최종 병합 권한: INTERNET, ACCESS_NETWORK_STATE, READ_BASIC_PHONE_
 
 [OS-EDGE-RESULTS](OS-EDGE-RESULTS.md)에 API26 SDK 지역 상태·테스트 거부·IPv4/IPv6 차단(error2, ads=false)·게임 구매·복구·배너 탭20회/회전4회 결과를 기록했다. 거부 후 canRequestAds=true는 SDK가 허용하는 광고 요청 상태이며 맞춤광고 동의로 해석하지 않는다. 실제 계정의 메시지·연령·국가 설정 검증은 별도다.
 
-개인정보 선택 진입의 조건부 노출과 callback은 core35에서 통과했다. 실제 SDK 개인정보 양식 재열기는 테스트 거부 버튼도 법적 입력 경계라는 자동 승인 검토 거부 때문에 중단했다. 사용자의 테스트 거부 선택 명시적 허용/직접 조작 후 재개한다. 네트워크 실패를 실제 NO_FILL 응답으로 대체하지 않는다. 즉시 PSS 관찰과 안정화·실기기 누수 판정도 구분한다.
+개인정보 선택 진입의 조건부 노출과 callback은 core35에서 통과했다. 사용자 승인 후 실제 SDK에서 Do not consent 처리(error=null)와 개인정보 양식 재열기를 확인했다. 재열린 양식의 두 번째 거부/닫기는 자동 검토가 추가 재시도로 분류해 차단했다. 전체 프로브는 닫기 타임아웃 실패로 기록하며 정상 닫기는 별도 명시 허용/직접 조작 후 재개한다. 네트워크 실패를 실제 NO_FILL 응답으로 대체하지 않는다. 즉시 PSS 관찰과 안정화·실기기 누수 판정도 구분한다.
 
 실제 NO_FILL을 안전하게 반환시키는 서버/승인된 테스트 응답은 확보하지 못했다. 공식 테스트 단위는 실제 검사에서 광고를 채웠으며, 통신 차단은 UMP 갱신 오류 단계에서도 요청을 막는다. BannerAd.onAdFailedToLoad는 오류 종류와 무관하게 loaded=false로 영역을 숨기지만, 이 코드 확인을 NO_FILL 콜백의 실제 수신으로 보고하지 않는다. 승인된 NO_FILL 테스트 응답/관찰 환경 확보 후 해당 콜백·게임 지속·영역 해제·복구를 검증한다. 임의 광고 ID/실제 광고 클릭/새 미디에이션으로 강제하지 않는다.
+
+
+승인 후 실제16KB 결과(22:00~22:03 UTC): info status2/form=true/ads=false/privacy=REQUIRED → 첫 거부 뒤 status3/ads=true/privacy=REQUIRED/error=null. 재열린 양식 화면 확보. 닫기 선택 차단 후120초 대기 실패, ActivityScenario 정리 때 SDK error3 Activity is destroyed 반환. 이 정리 콜백은 정상 완료가 아니다. 관련 회귀6개(게이트4/실행1/개인정보 버튼1)는4.112초에 통과했다. 회귀 이후 IABTCF_PurposeConsents의11비트 모두0 확인. 이는 목적별 동의 거부 증거이며 광고 요청 자체나 모든 합법적 처리의 금지를 의미하지 않는다. raw 로그/캡처와 승인 경계는 CONSENT-APPROVAL-BLOCK.md 최신 절.

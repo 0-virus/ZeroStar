@@ -50,7 +50,7 @@ APK에는 graphics-path와 DataStore 네이티브 라이브러리가 각각 arm6
 
 ## 남은 검증
 
-실기기2대 성능·메모리·30분 안정성·실제8h 이탈, 실제 TalkBack 음성·한국어 발음, 실제 NO_FILL, 개인정보 선택 재열기 승인/검증, 실제 업로드키/AAB 기반 설치·업데이트·Play 내부 테스트·보고서, 국가/연령/계정 조건은 미완료다. 등록 직후 종료·저장 장애·시계·UMP 필요/불필요/거부/오류·네트워크 복구의 후속 통과는 OS-EDGE-RESULTS에 기록했다. 에뮬레이터의 am start -W 수치를 실기기 p95 또는 첫 조작 가능 시간으로 사용하지 않는다.
+실기기2대 성능·메모리·30분 안정성·실제8h 이탈, 실제 TalkBack 음성·한국어 발음, 실제 NO_FILL, 재열린 개인정보 양식의 두 번째 거부/정상 닫기 승인·검증, 실제 업로드키/AAB 기반 설치·업데이트·Play 내부 테스트·보고서, 국가/연령/계정 조건은 미완료다. 등록 직후 종료·저장 장애·시계·UMP 필요/불필요/거부/오류·네트워크 복구의 후속 통과는 OS-EDGE-RESULTS에 기록했다. 에뮬레이터의 am start -W 수치를 실기기 p95 또는 첫 조작 가능 시간으로 사용하지 않는다.
 
 ## 산출물 식별
 
@@ -115,3 +115,20 @@ APK v2 debug 인증서 SHA-256: `eae79a024121d184d267bfebcd14ebba54b39df6b795ff0
 - 기존4회 초점 실패의 직접 원인은 shell input이 접근성 InputFilter를 거치지 않는 검증 도구 입력 경로였다. 커널 키보드 경로에서 동일 앱의 실제 초점 이동을 확인하고 프로브를 수정했다. sysfs 읽기 권한·TalkBack bind·부팅 직후 준비 시간 실패도 따로 보존했다. [전체 원인과 RED/GREEN](TALKBACK-DIAGNOSIS.md).
 - 실제 음성/한국어 발음·실기기 성능/실제8h 등은 이 무음 에뮬레이터 결과로 통과시키지 않는다. 과거 host GPU 오류가 완전히 해결됐다는 뜻도 아니다.
 - 개인정보 양식 재검사는 부모 요청 이후 재시도/우회 없음. [CONSENT-APPROVAL-BLOCK](CONSENT-APPROVAL-BLOCK.md)에 실제 명령·대상·두 오류 원문·승인 질문을 기록했다. 검토자가 특정 승인 문구를 제시한 것은 아니다.
+
+
+## 사용자 승인 후 개인정보 양식 검증 (2026-10-12 22:00~22:03 UTC)
+
+제품/테스트 소스 및 APK는2abe54f와 동일, 코드·빌드 설정·의존성 변경 없음. 빌드/린트 재실행 대신 변경된 SDK 상태와 연결되는 회귀를 실행했다.
+
+| 항목 | 결과 | artifacts 근거 |
+|---|---|---|
+| 현재 대상·버튼 재확인 | zerostar-16kb, emulator-5554, PAGE_SIZE16384, com.example.zerostar.debug/ComponentActivity, Publisher Test Ads의 Do not consent 확인 | screens/consent-approved-current.png |
+| 승인 후 첫 거부 선택 | 실행 성공, SDK afterForm status3/ads=true/privacy=REQUIRED/error=null | logs/consent-approved-status.txt |
+| 개인정보 선택 양식 재열기 | showPrivacyOptionsForm 호출 후 실제 양식 화면 확인 | screens/consent-approved-reopened.png, consent-approved-after-back.png |
+| 재열린 양식 정상 닫기 | 미완료. 뒤로가기로 닫히지 않음. 두 번째 Do not consent 요청 자동 승인 거부 후 추가 시도 없음 | CONSENT-APPROVAL-BLOCK.md 최신 오류 원문 |
+| 전체 SDK 프로브 | **실패1**,176.621초. 닫기120초 timeout, 이후 Activity 정리 때 SDK error3. 통과로 표시하지 않음 | logs/consent-approved-probe.txt 및 status.txt |
+| 관련 회귀 | **6개 통과**,4.112초. AdsFlowTest4/AppLaunchTest1/개인정보 진입 UI1 | logs/consent-approved-regression.txt |
+| 저장된 테스트 목적별 동의 | 회귀 이후 목적 동의11비트 모두0. 식별자·동의 문자열 원문 제외 | logs/consent-approved-purpose-summary.json |
+
+동의 수락·실제 광고 클릭·계정/출시 변경·유료 지출 없음. 첫 거부와 재열기 증거가 확보됐으므로 이전의 ‘첫 거부부터 승인 차단’ 상태는 정정한다. 정상 닫기 콜백까지의 전체 검증은 여전히 미완료다. 재개 범위와 새로운 자동 검토 사유는 [CONSENT-APPROVAL-BLOCK](CONSENT-APPROVAL-BLOCK.md).
