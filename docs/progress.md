@@ -46,3 +46,11 @@
 - UI 테스트 코드는 구현 전에 작성했지만 실행 환경 준비 중이라 UI RED→GREEN은 아직 입증 못함. 컴파일 실패를 UI 행동 테스트 실패로 세지 않음.
 - API36/Build Tools35/adb/에뮬레이터 설치 목록 artifacts/logs/sdk-installed.txt. 사용자 별도 ‘동의 완료’ 응답 기록. `--licenses` 경고 자체는 동의/설치 증거 아님.
 - 에뮬레이터 WHPX 지원, 기본 데이터 파티션 공간 부족 확인. 테스트 AVD 2GB로 변경 중. 실기기 0대.
+
+### M3a 광고 연동 검증
+- M3 커밋 `0730870`. 공식 Next-Gen SDK 1.5.0 + UMP 4.0.0 사용. Legacy SDK·미디에이션·분석 SDK 추가 없음.
+- 동의 게이트 4개 포함 JVM 20개 통과. RED 로그 m3a-red.txt(2실패), GREEN m3a-green.txt.
+- 광고 통합 후 Android assembleDebug / testDebugUnitTest / lintDebug / assembleDebugAndroidTest BUILD SUCCESSFUL, 20개 단위 테스트 통과, lint 0 errors / 14 warnings. artifacts/logs/m3a-verify.txt.
+- 실제 배너/UMP/오프라인 장치 테스트 미실행. 에뮬레이터가 데이터 영역 최소 6GB(부팅 여유 7.2GB)를 강제해 C: 여유 약 5GB로 차단. 사용자에게 추가 공간/실기기 요청.
+- Ruling: 현재 실행 도구에는 Dots 클라우드 터미널이 없고 연결 프로젝트는 local뿐. 사용자 클라우드 질문은 이전/업로드 승인으로 해석하지 않음.
+- 출시 packaging은 실제 ID·정책·연령 명시·서명 입력 없으면 실패하도록 구성. debug/benchmark는 공식 테스트 ID.
