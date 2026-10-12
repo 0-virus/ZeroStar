@@ -37,3 +37,12 @@
 - 16개 테스트 중 미구현에서 9실패 → 최종 16통과. 로그 artifacts/logs/m2-red.txt, m2-green.txt. LifecycleSaveTest는 단조 시계 순수 로직이며 Android OS 검증과 구분.
 - Ruling: 저장 데이터의 필수 필드 누락도 손상으로 처리. 기본값 역직렬화로 손상 파일이 새 게임이 되는 것을 방지.
 - Android 실제 생명주기·강제종료 검증은 뒤따르는 장치 테스트에 남아 있음.
+
+### M3 화면·Android 빌드
+- 저장 코어 커밋 `d9fb66e`.
+- 3화면, 한국어 리소스, 픽셀 별 6단계/6장식, OFL 폰트 로컬 번들, 원본 합성 음향 3개, 설정·초기화·복귀 안내 구현.
+- Android `assembleDebug testDebugUnitTest lintDebug assembleDebugAndroidTest` BUILD SUCCESSFUL. 단위 테스트 20개 통과, lint 0 errors / 15 warnings. 로그 artifacts/logs/m3-verify.txt.
+- Ruling: Windows에서 Android DataStore의 renameTo가 기존 파일 교체에 실패. 호스트 단위 테스트 런타임만 공식 datastore-core-jvm으로 치환. Android instrumentation에도 동일 코어 테스트 소스를 포함해 실제 Android 변형은 장치에서 검증한다.
+- UI 테스트 코드는 구현 전에 작성했지만 실행 환경 준비 중이라 UI RED→GREEN은 아직 입증 못함. 컴파일 실패를 UI 행동 테스트 실패로 세지 않음.
+- API36/Build Tools35/adb/에뮬레이터 설치 목록 artifacts/logs/sdk-installed.txt. 사용자 별도 ‘동의 완료’ 응답 기록. `--licenses` 경고 자체는 동의/설치 증거 아님.
+- 에뮬레이터 WHPX 지원, 기본 데이터 파티션 공간 부족 확인. 테스트 AVD 2GB로 변경 중. 실기기 0대.

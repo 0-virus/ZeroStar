@@ -14,6 +14,8 @@ android {
         versionCode = 1
         versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "PRIVACY_URL", "\"\"")
+        buildConfigField("String", "SUPPORT_EMAIL", "\"\"")
     }
     buildFeatures { compose = true; buildConfig = true }
     buildTypes {
@@ -48,3 +50,14 @@ dependencies {
     debugImplementation(libs.compose.tooling)
     debugImplementation(libs.compose.test.manifest)
 }
+
+
+// Android's File.renameTo assumes Unix replacement semantics; host tests use the JVM implementation.
+configurations.matching { it.name.endsWith("UnitTestRuntimeClasspath") }.configureEach {
+    resolutionStrategy.dependencySubstitution {
+        substitute(module("androidx.datastore:datastore-core")).using(module("androidx.datastore:datastore-core-jvm:1.1.7"))
+        substitute(module("androidx.datastore:datastore-core-android")).using(module("androidx.datastore:datastore-core-jvm:1.1.7"))
+    }
+}
+android.sourceSets.getByName("androidTest").java.srcDir("src/test/java")
+dependencies { androidTestImplementation(libs.coroutines.test) }
