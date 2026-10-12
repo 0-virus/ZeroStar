@@ -66,3 +66,5 @@ STORE-LISTING.md, PRIVACY-POLICY.md는 소유자 확정 전 초안이다. 이미
 PowerShell에서 ANDROID_HOME/ANDROID_SDK_ROOT를 `.tools/android-sdk` 절대 경로, ANDROID_AVD_HOME을 `.tools/avd` 절대 경로로 설정한다. 작업용 에뮬레이터는 `emulator.exe -avd zerostar-16kb -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader -feature -Vulkan -memory 2048 -cores 2`로 실행했다. Windows 백그라운드 실행은 Start-Process -WindowStyle Hidden을 사용한다. `adb shell getconf PAGE_SIZE`는16384여야 한다. 기기 선택과 충분한 디스크를 먼저 확인한다.
 
 Gradle connected 검사는 종료 후 테스트 앱을 정리할 수 있다. adb instrumentation을 직접 재실행하려면 최종 app-debug.apk와 app-debug-androidTest.apk를 먼저 설치하고 `adb shell pm list instrumentation`의 실제 runner를 사용한다. 검사 종료 시 임시 화면 크기·density·font_scale을 복구한다.
+
+후속 인수인계 감사에서 release 버전 입력 가드를 보완했다. 이제 ZEROSTAR_VERSION_CODE/NAME도 명시해야 한다. 회귀 검사는 python tools/check-release-guard.py로 실행한다. 기존 APK는9e77ea4 빌드이고 후속 가드 수정으로 재생성하지 않았다. 독립 추가 검증과 사용자 차단의 구분은 RELEASE-READINESS 마지막 절을 따른다.

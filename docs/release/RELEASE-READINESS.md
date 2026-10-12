@@ -1,12 +1,12 @@
 # RELEASE_READY 판정
 
-검증 기준일: 2026-10-12 UTC. **WAITING_FOR_USER**. `TECHNICALLY_READY`, `RELEASE_READY`, `PUBLISHED` 아님. 제품 코드 커밋 `9e77ea4`.
+검증 기준일: 2026-10-12 UTC. **IN_PROGRESS — 독립 검증 잔여, 출시 입력은 WAITING_FOR_USER**. `TECHNICALLY_READY`, `RELEASE_READY`, `PUBLISHED` 아님. 검증된 APK의 제품 소스 커밋 `9e77ea4`. 이후 인수인계 감사에서 release 버전 입력 가드를 보완했다(게임 런타임 코드 불변).
 
 명세 §9는 아래 모든 항목의 AND 조건이다. 구현과 로컬 Android 검증을 진행했으며, 남은 실기기·실제 사용자·출시 정보·계정 조건은 통과로 표시하지 않는다. 정확한 APK 해시·결과·실패 이력은 [TEST-RESULTS](../qa/TEST-RESULTS.md), 단계별 커밋은 [progress](../progress.md), 재개 명령은 [RELEASE-RUNBOOK](RELEASE-RUNBOOK.md)에 있다.
 
 | §9 필수 항목 | 상태 | 증거 / 차단 / 재개 조건 |
 |---|---|---|
-| 기능·저장·접근성·실기기 품질 | 부분 검증 | JVM23, Android 단위23, API26 장치32, API36 일반31, 실제16KB33 통과. 실제 OS 종료20·배경20·재부팅·오프라인 구매 검증. 실기기2대 성능/안정성/8h/TalkBack 등 DEVICE-MATRIX 잔여 항목 필요 |
+| 기능·저장·접근성·실기기 품질 | 부분 검증 | JVM23, Android 단위23, API26 장치32, API36 일반31, 실제16KB33 통과. 실제 OS 종료20·배경20·재부팅·오프라인 구매 검증. 등록 직후 OS 종료·시각 변경·저장 오류 UI·광고 실패/복구 등 독립 검증 잔여와 실기기2대 성능/안정성/8h/TalkBack 등 DEVICE-MATRIX 잔여 항목 필요 |
 | 출시 차단 결함0 | 미확정 | 발견한 저장 수명/SDK 런타임/작은 화면 결함 수정 및 회귀 통과. 미실행 품질·정책·서명 기준이 남아 전체0 판정 불가 |
 | 확정 ID·버전·사용자 보관 키 | 대기 | 임시 com.example.zerostar / 0.1.0 / 1. 최종 값과 사용자 업로드 키 보관 확인 필요 |
 | 서명 AAB·테스트 APK·해시·재현법·의존성·결과 | 부분 준비 | APK3개, SHA-256, debug 인증서, RUNBOOK, DEPENDENCIES/ASSET-LICENSES 준비. 출시 서명 AAB 없음; 필수 입력 가드가 차단함 |
@@ -38,3 +38,16 @@ SDK 설치와 에뮬레이터 부팅 용량 차단은 해결해 API26/API36/16KB
 - 정책·등급·권리 초안은 소유자/해당 Console 확인 전 법적 승인이나 제출 완료가 아니다.
 
 실제 스토어 공개·유료 지출·원격 push는 수행하지 않았으며 별도 지시 전 실행하지 않는다. 클라우드로 소스/키를 전송하지 않았다. 연결된 클라우드 실행 환경과 가상화 지원도 확인되지 않았다.
+
+## 인수인계 감사: 독립 작업과 외부 차단 구분
+
+“사용자 준비 없이 할 일이 전혀 없다”는 판정은 아니다. 추가 코딩이 필요한 확인된 게임 런타임 결함은 이번 읽기 검토에서 발견하지 않았지만, 아래 검증은 아직 수행하지 않았고 외부 계정/실기기 대기로 묶어서는 안 된다.
+
+- 보존된 전용16KB AVD: 등록 직후 OS 종료/재시작 반복, OS 시계 앞뒤 변경, 테스트 저장 파일 손상·미래 스키마·쓰기 실패의 실제 오류 UI/재시도. 단위/장치 저장소 테스트와 이 수동 OS 조작은 별도 증거다.
+- 전용 AVD: 네트워크 실패→복구의 실제 배너 생명주기·회전/Activity 재생성·반복 해제, 시스템 인셋/분할 화면 조합. 현재 테스트 배너 표시와 일부 크기 검증은 이미 통과했다.
+- TalkBack은 사용 가능한 서비스/장치에서 실제 음성·초점 검증이 필요하다. 에뮬레이터에서 준비 가능한 범위와 실기기 요구를 구분하며 현재는 미실행이다.
+- 실제8h·실기기당30분·성능/메모리 수치와 사용자3명 피드백은 단축하거나 에뮬레이터/단위 테스트로 대체하지 않는다. 최종 AAB·실제 UMP 계정 메시지·Play 조건은 별도 사용자/외부 차단이다.
+
+release 가드가 기본 버전값을 허용하던 독립 수정 사항은 보완했다. `ZEROSTAR_VERSION_CODE` 양수와 `ZEROSTAR_VERSION_NAME` 비공백을 명시적으로 요구하며 debug 기본값은 유지한다. 회귀 도구 `tools/check-release-guard.py`는 실제 ID/키 없이 버전 누락2건과 다음 가드 진입1건을 검증한다. 상세 RED/GREEN은 TEST-RESULTS.
+
+린트13개 상세: AndroidGradlePluginVersion2(Gradle/AGP), GradleDependency4(Compose BOM/Lifecycle2/Activity), NewerVersionAvailable6(Kotlin 플러그인3/serialization/coroutines2), UseKtx1(Uri.parse→toUri 권고). 즉 버전 권고12와 동등 동작 API 스타일 권고1이며 검출된 오류·런타임 결함은 아니다. 호환성 검증 없이 일괄 업데이트하거나 경고를 숨기지 않았다. 배너 deprecated 컴파일 경고는 이13개와 별개다.

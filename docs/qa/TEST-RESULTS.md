@@ -54,7 +54,7 @@ APK에는 graphics-path와 DataStore 네이티브 라이브러리가 각각 arm6
 
 ## 산출물 식별
 
-제품 소스 커밋 `9e77ea4`. 최종 문서 커밋은 이 소스에서 문서·스토어 자산만 추가한다. Gradle8.13/JDK21.0.10, versionCode1 / versionName0.1.0, minSdk26 / targetSdk36. 서명 AAB는 사용자 키/정보 미확정으로 생성하지 않았다.
+제품 소스 커밋 `9e77ea4`. 문서 커밋2b49884는 이 소스에서 문서·스토어 자산만 추가했다. 후속 인수인계 감사의 변경은 release 버전 입력 가드와 검증 도구에 한정되며 아래 APK는 다시 만들지 않았다. Gradle8.13/JDK21.0.10, versionCode1 / versionName0.1.0, minSdk26 / targetSdk36. 서명 AAB는 사용자 키/정보 미확정으로 생성하지 않았다.
 
 | 산출물 (app/build/outputs/apk 아래) | 바이트 | SHA-256 |
 |---|---:|---|
@@ -69,3 +69,13 @@ APK v2 debug 인증서 SHA-256: `eae79a024121d184d267bfebcd14ebba54b39df6b795ff0
 추가 화면 검사 첫 adb 시도는 Gradle이 테스트 APK를 정리한 상태여서 runner를 찾지 못했다(ui-412dp.txt). 같은 최종 APK와 test APK 재설치 후412dp·600dp 각7개가 통과했다. 앱 동작 실패로 계산하지 않았으며 원래 오류 로그는 보존했다. 검사 뒤 화면 크기·density·font_scale을 복구했다.
 
 추가 최적화 APK 실행: 최종 benchmark 해시의 APK를 실제16KB에 설치하고 MainActivity `Status: ok`·프로세스 유지·게임/테스트 배너 화면을 확인했다. `benchmark-launch16kb.txt`, `benchmark-package-flags.txt`, `benchmark-crash16kb.txt`, `artifacts/screens/benchmark-final16kb.png` 참조. debug 플래그 없음, min26/target36 확인. 단발 am start TotalTime1313ms는 p95/첫 조작 성능 합격 근거로 쓰지 않는다. 이때 화면에는 System UI 응답 없음 대화상자가 관찰됐고, lastanr 조회는 이번 부팅 기록 없음이었다. 원인을 확정하지 않았으며 `16kb-last-anr.txt`와 화면을 보존했다. 앱 프로세스 종료는 관찰하지 않았으나 30분 안정성 통과로 처리하지 않는다.
+
+## 인수인계 감사 후 release 버전 가드
+
+기존 가드는 버전 환경변수가 빠졌을 때 debug용 기본값1/0.1.0을 release에도 허용했다. 최종 버전 확정 요구에 맞춰 `ZEROSTAR_VERSION_CODE` 명시적 양수 및 `ZEROSTAR_VERSION_NAME` 비공백을 추가 검증한다. debug 기본값과 게임 런타임은 변경하지 않았다.
+
+`python tools/check-release-guard.py`: 버전 코드 누락 / 버전 이름 누락 / 버전 입력 후 다음 광고 ID 가드 진입의3건. 수정 전2실패·1통과(`release-version-guard-red.txt`), 수정 후3통과(`release-version-guard-green.txt`). 모든 사례에서 실제 키·ID 없이 의도적으로 release 구성을 거부하며 AAB/APK는 생성하지 않는다. 테스트에서 개발 기본 버전을 허용한다고 사용자 버전 승인을 자동 획득한 것으로 해석하지 않는다.
+
+원래 검증 APK3개의 해시·debug 서명·기기 결과는 위 표 그대로9e77ea4 소스 빌드에 귀속된다. 출시 서명 AAB는 계속 미생성이다.
+
+후속 빌드 설정 검증: `:app:testDebugUnitTest :app:lintDebug :app:lintRelease` BUILD SUCCESSFUL(42초), 기존 단위23개·lint 각각 오류0/경고13 유지(`handoff-guard-checks.txt`). instrumentation 테스트 APK도 apksigner 확인 결과 APK Signature Scheme v2, Android Debug 인증서이며 앱 debug/benchmark와 같은 지문이다(`androidtest-signature-handoff.txt`). 배포용 업로드 키/Play App Signing 서명이 아니다.

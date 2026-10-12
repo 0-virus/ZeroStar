@@ -100,6 +100,8 @@ val verifyReleaseConfiguration = tasks.register("verifyReleaseConfiguration") {
     group = "verification"
     doLast {
         check(releaseAppId != "com.example.zerostar" && releaseAppId.matches(Regex("[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+"))) { "Set the owner-approved ZEROSTAR_APPLICATION_ID." }
+        check((env("ZEROSTAR_VERSION_CODE").toIntOrNull() ?: 0) > 0) { "Set the owner-approved positive ZEROSTAR_VERSION_CODE." }
+        check(env("ZEROSTAR_VERSION_NAME").isNotBlank()) { "Set the owner-approved ZEROSTAR_VERSION_NAME." }
         listOf("ZEROSTAR_ADMOB_APP_ID", "ZEROSTAR_ADMOB_BANNER_ID").forEach { name ->
             check(env(name).startsWith("ca-app-pub-") && !env(name).contains("3940256099942544")) { "$name must be a production ID." }
         }

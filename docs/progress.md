@@ -1,7 +1,7 @@
 # ZeroStar 진행 기록
 
 기준 계획: docs/superpowers/plans/2026-10-12-star-game.md
-상태: WAITING_FOR_USER. RELEASE_READY가 아님. 2026-10-12. 아래는 시간순 기록이며 최신 판정은 최종 인수인계 절과 RELEASE-READINESS를 따른다.
+상태: IN_PROGRESS — 독립 검증 잔여, 출시 입력 WAITING_FOR_USER. RELEASE_READY가 아님. 2026-10-12. 아래는 시간순 기록이며 최신 판정은 최종 인수인계 절과 RELEASE-READINESS를 따른다.
 
 ## 시작과 판단
 
@@ -102,3 +102,13 @@
 - 추가 레이아웃: 412×892dp UI7개, 600×960dp/글자1.3 UI7개 모두 통과(ui-412dp-installed.txt, ui-600dp-font13.txt). 첫 adb 호출의 runner 없음은 테스트 APK 정리 상태였고 최종 APK 재설치로 해결. 설정 복구 후 종료한다.
 
 - 최종 benchmark APK 실제16KB 설치·MainActivity 실행·프로세스 유지 확인. System UI 응답 없음 대화상자 관찰은 별도 기록했고 실기기 안정성 합격으로 해석하지 않았다. 모든 검사 후 화면 설정 복구, 작업용 에뮬레이터 종료.
+
+### 마지막 인수인계 감사
+
+부모 요청으로 §9/M0~M3a와 최종 코드·lint를 읽기 재검토했다. 사용자 준비 없이 가능한 추가 OS/광고/접근성 검증이 남아 있으므로 모든 잔여 작업을 WAITING_FOR_USER로 묶은 이전 요약을 정정했다. 독립 검증 목록은 RELEASE-READINESS의 인수인계 감사 절에 명시한다. M0~M3a 전체 수동 검증 완료라고 판정하지 않는다.
+
+독립 수정: release 가드가 최종 버전 입력 없이 default0.1.0/1을 허용하던 빈틈을 발견했다. 명시적 versionCode/versionName 검사를 추가하고, 실제 자격증명 없는 회귀3건으로 RED(2실패/1통과)→GREEN을 검증한다. APK 안의 게임 런타임은 수정하지 않았으며 이전 APK 해시·서명·기기 검사 근거는9e77ea4 빌드에 귀속된다.
+
+lintDebug/release 각13개는 버전 권고12 + Uri KTX 권고1. 별도 런타임 결함 경고는 없다. 이 사실이 미실행 경로의 결함0을 보장하지는 않는다. 확인된 이전 저장/SDK/UI 결함은9e77ea4에서 수정·회귀했고 System UI/호스트 문제와 ARM64 최종 검증은 기존 기록대로 남긴다.
+
+- 후속 가드 회귀3건 GREEN, Android unit23/lintDebug·release0오류/13경고 유지. 테스트 APK3개 모두 Android Debug/v2 인증서 확인. 검증 명령42초 BUILD SUCCESSFUL. 기존 APK 해시 변경 없음.
