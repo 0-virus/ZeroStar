@@ -16,3 +16,4 @@ artifacts/
 captures/
 testers/
 device-data/
+__pycache__/

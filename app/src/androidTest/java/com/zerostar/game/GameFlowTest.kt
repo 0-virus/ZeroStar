@@ -21,7 +21,8 @@ class GameFlowTest {
     @get:Rule val temp = TemporaryFolder()
     private lateinit var repo: GameRepository
     @After fun close() { if (::repo.isInitialized) runBlocking { repo.close() } }
-    private fun show(state: GameState, reward: ResumeResult? = null, banner: @Composable () -> Unit = {}) {
+    private fun show(state: GameState, reward: ResumeResult? = null, banner: @Composable () -> Unit = {},
+        privacyRequired: Boolean = false, onPrivacy: () -> Unit = {}) {
         val file = File(temp.newFolder(), "game.json")
         file.writeText(GameSerializer.encode(state))
         repo = GameRepository(file)
@@ -29,18 +30,38 @@ class GameFlowTest {
         compose.setContent {
             StarScreen(ui.value, onAction = { action ->
                 ui.value = ui.value.copy(game = runBlocking { repo.dispatch(action, 0, 1000).getOrThrow() })
-            }, onRetry = {}, onDismissReward = { ui.value = ui.value.copy(reward = null) }, banner = banner)
+            }, onRetry = {}, onDismissReward = { ui.value = ui.value.copy(reward = null) },
+                privacyRequired = privacyRequired, onPrivacy = onPrivacy, banner = banner)
         }
     }
     @Test fun homeShowsUpgradeWithoutScrollingWithBanner() {
         show(GameState(lastSettledEpochMs = 1000, tutorialSeen = true), banner = { Box(Modifier.height(60.dp)) })
         compose.onNodeWithTag("upgrade").assertIsDisplayed()
     }
+    @Test fun disabledUpgradeHasReadableReasonAndAdequateTouchTarget() {
+        show(GameState(lastSettledEpochMs = 1000, tutorialSeen = true))
+        compose.onNodeWithTag("upgrade").performScrollTo()
+            .assertIsNotEnabled().assertHeightIsAtLeast(48.dp)
+        compose.onNodeWithText("빛 모으기 · 20 별빛").assertExists()
+        compose.onNodeWithText("20 별빛이 더 필요해요").performScrollTo().assertIsDisplayed()
+        // Production text is not a live region that would speak every 1Hz tick.
+        val semantics = compose.onNodeWithTag("balance").fetchSemanticsNode().config
+        org.junit.Assert.assertFalse(semantics.contains(androidx.compose.ui.semantics.SemanticsProperties.LiveRegion))
+    }
     @Test fun settingsHaveNamedToggleSemanticsAndPersistChanges() {
         show(GameState(lastSettledEpochMs = 1000, tutorialSeen = true))
         compose.onNodeWithText("설정", useUnmergedTree = true).performClick()
         compose.onNodeWithText("효과음").assertIsToggleable().assertIsOn().performClick().assertIsOff()
         compose.onNodeWithText("움직임 줄이기").assertIsToggleable().assertIsOff().performClick().assertIsOn()
+        compose.onNodeWithText("광고 개인정보 선택").assertDoesNotExist()
+    }
+    @Test fun requiredPrivacyOptionsEntryInvokesTheSdkBoundary() {
+        var openings = 0
+        show(GameState(lastSettledEpochMs = 1000, tutorialSeen = true),
+            privacyRequired = true, onPrivacy = { openings++ })
+        compose.onNodeWithText("설정", useUnmergedTree = true).performClick()
+        compose.onNodeWithText("광고 개인정보 선택").performScrollTo().performClick()
+        org.junit.Assert.assertEquals(1, openings)
     }
     @Test fun collectedDescriptionCanScrollIntoView() {
         show(GameState(collectedCount = 1, lastSettledEpochMs = 1000, tutorialSeen = true))

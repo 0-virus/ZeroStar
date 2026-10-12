@@ -1,7 +1,7 @@
 # ZeroStar 진행 기록
 
 기준 계획: docs/superpowers/plans/2026-10-12-star-game.md
-상태: IN_PROGRESS — 독립 검증 잔여, 출시 입력 WAITING_FOR_USER. RELEASE_READY가 아님. 2026-10-12. 아래는 시간순 기록이며 최신 판정은 최종 인수인계 절과 RELEASE-READINESS를 따른다.
+상태: IN_PROGRESS — 독립 장치 검증 확대 및 최종 증거 정리. 출시 입력 WAITING_FOR_USER. RELEASE_READY가 아님. 2026-10-12. 아래는 시간순 기록이며 최신 판정은 마지막 절과 RELEASE-READINESS를 따른다.
 
 ## 시작과 판단
 
@@ -112,3 +112,12 @@
 lintDebug/release 각13개는 버전 권고12 + Uri KTX 권고1. 별도 런타임 결함 경고는 없다. 이 사실이 미실행 경로의 결함0을 보장하지는 않는다. 확인된 이전 저장/SDK/UI 결함은9e77ea4에서 수정·회귀했고 System UI/호스트 문제와 ARM64 최종 검증은 기존 기록대로 남긴다.
 
 - 후속 가드 회귀3건 GREEN, Android unit23/lintDebug·release0오류/13경고 유지. 테스트 APK3개 모두 Android Debug/v2 인증서 확인. 검증 명령42초 BUILD SUCCESSFUL. 기존 APK 해시 변경 없음.
+
+### 독립 장치 검증 재개
+
+- 출시 가드/인수인계 보완 커밋 `7e4ddca`. API26 이미지를 다시 설치하고 OS/UI 검사를 확대했다. 등록 직후 종료20/20, 실제 저장 오류4종·복구, OS 시계+1h/-2h/+24h, 확실한 IPv4/IPv6 차단에서 게임 구매와 UMP 실패 및 복구, 광고 탭20회/회전4회, 분할 화면+글자1.3 통과. 자세한 fixture/로그/한계는 [OS-EDGE-RESULTS](qa/OS-EDGE-RESULTS.md).
+- wlan0만 내린 과거 오프라인 증거는 전체 통신 차단 증거로 불충분했다. 실제 SDK 요청 실패까지 확인한 후속 검사로 정정한다. 시계 변경으로 실제8h 경과를 대체하지 않는다.
+- 소프트웨어 GPU의 QEMU 종료·Windows commit 한도 소진을 관찰했다. 사용자 프로세스는 건드리지 않고 작업 AVD만 host GPU/작은 guest RAM으로 재시작했다. AVD를 끄고 worker1/JVM1GB로 빌드한다. 디스크와 호스트 메모리 원인을 구분한다.
+- 추가 접근성/개인정보 진입 검사를 포함해 실제16KB core35 통과(13.75초). 단위23, debug/release lint 오류0/경고13 및 test APK 빌드 성공(1분15초). SDK 지역/오류 진단은 opt-in 별도이며 core 합격 수에 넣지 않는다.
+- API26 실제 UMP 테스트 지역 불필요/필요/거부 결과 확인. API36 개인정보 양식 재열기 시도의 거부 선택은 자동 승인 검토가 법적 입력 경계라며 거부했고, 사용자에게 테스트 거부 선택만 명시적 허용을 요청했다. 우회하거나 수락 선택하지 않는다.
+- 최신 사용자 공간 재확인: C:5.63GiB. API26와16KB AVD/이미지는 이미 설치되어 있고16KB는 정상 부팅했다. 현재 공간 부족이 부팅 차단은 아니다. 추가 대용량 설치 전에는 다시 확인한다.
