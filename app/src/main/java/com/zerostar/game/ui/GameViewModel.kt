@@ -8,6 +8,7 @@ import com.zerostar.game.StarApplication
 import com.zerostar.game.data.*
 import com.zerostar.game.game.*
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -30,20 +31,23 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val soundChannel = Channel<GameSound>(Channel.BUFFERED)
     val sounds = soundChannel.receiveAsFlow()
     private data class Event(val kind: Int, val action: GameAction? = null, val mono: Long = SystemClock.elapsedRealtime(), val epoch: Long = System.currentTimeMillis())
-    private val events = Channel<Event>(Channel.UNLIMITED)
+    private val commands = (application as StarApplication).commands
 
-    init {
-        viewModelScope.launch { for (event in events) handle(event) }
-        viewModelScope.launch {
+    private var ticker: Job? = null
+    private fun startTicker() {
+        ticker?.cancel()
+        ticker = viewModelScope.launch {
             while (true) {
                 delay(1000)
-                if (active) events.send(Event(2))
+                if (active) enqueue(Event(2))
             }
         }
     }
-    fun resume() { events.trySend(Event(0)) }
-    fun pause() { events.trySend(Event(1)) }
-    fun dispatch(action: GameAction) { events.trySend(Event(3, action)) }
+    private fun enqueue(event: Event) { commands.send { handle(event) } }
+    override fun onCleared() { pause(); super.onCleared() }
+    fun resume() { enqueue(Event(0)) }
+    fun pause() { enqueue(Event(1)) }
+    fun dispatch(action: GameAction) { enqueue(Event(3, action)) }
     fun dismissReward() { _ui.value = _ui.value.copy(reward = null) }
 
     private suspend fun handle(event: Event) {
@@ -55,12 +59,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                     clock.stop(event.mono)
                     clock.start(event.mono)
                     active = true
+                    startTicker()
                     _ui.value = GameUiState(result.state, reward = result.takeIf { it.seconds > 0 && it.rewardMilli > 0 })
                 }, onFailure = { fail() })
             }
             1 -> {
                 if (!active) return
                 active = false
+                ticker?.cancel()
                 val seconds = clock.stop(event.mono)
                 repository.pause(seconds, event.epoch).fold(onSuccess = {
                     saved = it
@@ -91,6 +97,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 clock.start(event.mono)
             } else clock.commit(event.mono)
             active = true
+            if (ticker?.isActive != true) startTicker()
             _ui.value = _ui.value.copy(game = next, error = false, reward = if (action == GameAction.Reset) null else _ui.value.reward)
             if (next.soundEnabled && before != null) {
                 val sound = when {
@@ -104,6 +111,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }, onFailure = { fail() })
     }
     private fun fail() {
+        ticker?.cancel()
         active = false
         clock.stop(SystemClock.elapsedRealtime())
         _ui.value = _ui.value.copy(error = true, game = saved)

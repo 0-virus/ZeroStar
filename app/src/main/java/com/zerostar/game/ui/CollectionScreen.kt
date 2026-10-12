@@ -1,6 +1,8 @@
 package com.zerostar.game.ui
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -24,8 +26,8 @@ import com.zerostar.game.game.GameState
         }
     }
     detail?.let { i ->
-        AlertDialog(onDismissRequest = { detail = null }, title = { Text(names[i]) }, text = {
-            Column { PixelStar(5, i, true); Text(descriptions[i]) }
+        AlertDialog(containerColor = MaterialTheme.colorScheme.surface, shape = androidx.compose.ui.graphics.RectangleShape, onDismissRequest = { detail = null }, title = { Text(names[i]) }, text = {
+            Column(Modifier.verticalScroll(rememberScrollState())) { PixelStar(5, i, true); Text(descriptions[i]) }
         }, confirmButton = { TextButton(onClick = { detail = null }) { Text(stringResource(R.string.close)) } })
     }
 }

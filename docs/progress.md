@@ -54,3 +54,29 @@
 - 실제 배너/UMP/오프라인 장치 테스트 미실행. 에뮬레이터가 데이터 영역 최소 6GB(부팅 여유 7.2GB)를 강제해 C: 여유 약 5GB로 차단. 사용자에게 추가 공간/실기기 요청.
 - Ruling: 현재 실행 도구에는 Dots 클라우드 터미널이 없고 연결 프로젝트는 local뿐. 사용자 클라우드 질문은 이전/업로드 승인으로 해석하지 않음.
 - 출시 packaging은 실제 ID·정책·연령 명시·서명 입력 없으면 실패하도록 구성. debug/benchmark는 공식 테스트 ID.
+
+### 코드 검토·M4~M6 독립 준비
+- M3a 커밋 `43f7ffb`.
+- 새 리뷰어가 P1 화면 종료 중 저장 취소, P2 스위치 명칭, 작은 가로 화면의 도감 상세 잘림을 발견. Application 소유 FIFO로 저장 수명을 분리하고, 이름 있는 스위치 행/도감 상세 스크롤로 수정. 게임 타이머도 배경 진입 시 취소.
+- 지연 저장/호출자 취소 순서 회귀는 RED 1실패 → GREEN. 기존 파일에 대한 실제 쓰기 실패 보존/재시도도 추가. 호스트 테스트 23개 통과. API36 장치 검증은 아래 별도 기록.
+- debug/benchmark APK, debug/release lint, 단위23개, test APK 빌드 성공: artifacts/logs/final-android-verified.txt. 빌드에 사용된 DataStore 1.2.1은 공식 안정 버전의 16KB 링크 수정 확인 후 채택. 새 기능이나 의존성 종류를 추가하지 않음.
+- 네이티브 파일 검사에서 기존 DataStore1.1.7 RELRO 끝 정렬 실패를 발견. 1.2.1은 LOAD/RELRO16KB 검사 통과. graphics-path1.0.1은 LOAD16KB/RELRO 추가 검사 불충족. 공식 안정1.1.0도 같아 변경하지 않음. 실제 16KB 실행 전 호환 완료로 표시하지 않는다.
+- 근거: https://developer.android.com/guide/practices/page-sizes 및 https://android.googlesource.com/platform/frameworks/support/+/00bc339d026c39791f891ea9db2313c1fcdc97f9 . 검사 도구 tools/inspect-apk.py.
+- 스토어 문구·정책·릴리스 노트 초안, 아이콘/대표 이미지, 기기/광고 검증표, 출시 재개 절차 준비. 실제 캡처와 계정/법적 확정은 별도.
+
+### 공간 확보 이후 API36 실제 실행
+- 사용자가 공간을 확보했고 C: 15.95GiB를 확인. 기존 API36 AVD 부팅 성공(4KB 페이지). 이전 공간 부족 차단은 해소됐다. 미사용 자체 캐시/중복ZIP만 정리했으며 일부 잠긴 캐시는 남겼다.
+- 첫 instrumentation은 30개 중 8개 결과에서 2실패, 전체 미완료. 광고 초기화의 AgeRestrictedTreatment.valueOf 호출이 runtime NoSuchMethodError를 일으킴. 별도로 Windows qemu 프로세스가 0xc0000005로 종료되어 남은 실행 중단. 로그 artifacts/logs/api36-instrumentation.txt, artifacts/qa-run/api36-red.
+- 공식 문서의 CHILD/TEEN/UNSPECIFIED 상수 선택으로 수정하고 LinkageError 시 게임을 종료하지 않게 광고 초기화를 실패 처리. 실제 SDK 계약 회귀 테스트 추가. 수정 후 debug/testAPK/단위23/lintDebug/lintRelease BUILD SUCCESSFUL(ads-sdk-fix-build.txt).
+- Vulkan을 끈 API36 AVD 부팅 성공, 전체31개 장치 테스트 재실행 중. 성공 여부는 최종 TEST-RESULTS에 기록한다. API26 이미지 설치 진행. 위 오류를 컴파일 통과만으로 해결 완료 처리하지 않는다.
+
+- 실시간 체크포인트: 사용자 두 번째 공간 재확인에서 C 15.95GiB(17.12GB), 이후 API36 userdata/API26 설치 후 약9GiB. API36 31개 재실행 중 10개 완료/실패0 확인. 외부 입력 대기 때문에 멈춘 상태가 아님. 부모 메시지 전달 도구는 thread not found를 반환해 이 파일에 함께 기록.
+
+### 최종 장치 검증 확대
+- API36 일반 이미지에서 31개 instrumentation 통과(api36-retest.txt). 실제 화면에서 강화 버튼이 첫 화면 아래로 밀리는 문제를 발견해 60dp 배너를 둔 360×640dp 테스트로 RED를 재현했고, compact-home-green2.txt에서 GREEN 확인. UI 숫자·규칙 변경 없음.
+- API26 최종 전체32개 및 unit23/lintDebug/lintRelease 통과(api26-final-suite.txt). 가로640×360·글자1.3배에서 도감 상세/설정 의미, native 두 라이브러리 로딩 추가3개 통과(api26-landscape-font13.txt).
+- API36 실제 강화 구매 후 force-stop+재실행20회, 배경/복귀20회 통과. tools/check-os-cycles.py가 저장 레벨·설정 유지, 생산량의 시간 범위, 중복 지출/지급 불변값을 확인. artifacts/qa-run/*20.json 및 로그에 전후 상태 보존. 도감 등록 직후 OS 종료·실기기 검증으로 확대 해석하지 않음.
+- 실제 Google Test Ad 화면 확보(growth-360.png, banner-360.png). 배너 WebView [0,488][360,544], 탭 라벨 y572~596으로 경계 분리 확인. 광고 클릭 없음.
+- 정상·도감·설정 실제 캡처 확보. API36 호스트 QEMU가 두 차례 0xc0000005로 종료한 이력과 System UI 응답 지연은 별도 환경 이슈로 기록. 비행기 모드 검증은 당시 중단됐음.
+- API26 재부팅 전후 강화1 유지, balance64000→307000, epoch 차81.204초에 기존 생산량3별빛/초로243000milli 지급 확인.
+- SDK16KB 이미지 설치 및 AVD 준비, 실행 검증 진행 중. 완전 출시 판정은 여전히 실기기/법적·계정/서명/실제AAB 조건 대기.

@@ -92,8 +92,8 @@ dependencies {
 // Host unit tests need JVM atomic replacement; device tests use the Android implementation.
 configurations.matching { it.name.endsWith("UnitTestRuntimeClasspath") }.configureEach {
     resolutionStrategy.dependencySubstitution {
-        substitute(module("androidx.datastore:datastore-core")).using(module("androidx.datastore:datastore-core-jvm:1.1.7"))
-        substitute(module("androidx.datastore:datastore-core-android")).using(module("androidx.datastore:datastore-core-jvm:1.1.7"))
+        substitute(module("androidx.datastore:datastore-core")).using(module("androidx.datastore:datastore-core-jvm:1.2.1"))
+        substitute(module("androidx.datastore:datastore-core-android")).using(module("androidx.datastore:datastore-core-jvm:1.2.1"))
     }
 }
 val verifyReleaseConfiguration = tasks.register("verifyReleaseConfiguration") {

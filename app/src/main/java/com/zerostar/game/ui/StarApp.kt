@@ -12,6 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.zerostar.game.ui.theme.PixelFont
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.zerostar.game.R
 import com.zerostar.game.data.GameAction
@@ -33,10 +35,12 @@ import com.zerostar.game.ui.theme.StarTheme
         var tab by rememberSaveable { mutableIntStateOf(0) }
         var dialog by rememberSaveable { mutableStateOf<String?>(null) }
         val state = ui.game
+        val scroll = rememberScrollState()
+        LaunchedEffect(tab) { scroll.scrollTo(0) }
         Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             Column(Modifier.safeDrawingPadding().fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(stringResource(R.string.app_name), Modifier.padding(12.dp), style = MaterialTheme.typography.titleMedium)
-                Column(Modifier.weight(1f).widthIn(max = 600.dp).fillMaxWidth().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(Modifier.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) { Text(stringResource(R.string.logo), fontFamily = PixelFont, fontSize = 12.sp); Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleMedium) }
+                Column(Modifier.weight(1f).widthIn(max = 600.dp).fillMaxWidth().verticalScroll(scroll).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     if (ui.error) {
                         Text(stringResource(R.string.save_error))
                         StarButton(stringResource(R.string.retry), onRetry)
@@ -59,13 +63,13 @@ import com.zerostar.game.ui.theme.StarTheme
         if (dialog != null) {
             val reset = dialog == "reset"
             val last = state?.collectedCount == 5
-            AlertDialog(onDismissRequest = { dialog = null }, title = { Text(stringResource(if (reset) R.string.reset_title else R.string.confirm_register)) },
+            AlertDialog(containerColor = MaterialTheme.colorScheme.surface, shape = androidx.compose.ui.graphics.RectangleShape, onDismissRequest = { dialog = null }, title = { Text(stringResource(if (reset) R.string.reset_title else R.string.confirm_register)) },
                 text = { Text(stringResource(if (reset) R.string.reset_detail else if(last) R.string.register_final_detail else R.string.register_detail)) },
                 confirmButton = { TextButton(onClick = { onAction(if(reset) GameAction.Reset else GameAction.RegisterStar); dialog = null }) {
                     Text(stringResource(if(reset) R.string.reset_confirm else if(last) R.string.finish_collection else R.string.next_star))
                 } }, dismissButton = { TextButton(onClick = { dialog = null }) { Text(stringResource(R.string.cancel)) } })
         } else ui.reward?.let { reward ->
-            AlertDialog(onDismissRequest = onDismissReward, title = { Text(stringResource(R.string.return_title)) },
+            AlertDialog(containerColor = MaterialTheme.colorScheme.surface, shape = androidx.compose.ui.graphics.RectangleShape, onDismissRequest = onDismissReward, title = { Text(stringResource(R.string.return_title)) },
                 text = { Text(stringResource(R.string.return_detail, reward.seconds/60, whole(reward.rewardMilli))) },
                 confirmButton = { TextButton(onClick = onDismissReward) { Text(stringResource(R.string.ok)) } })
         }

@@ -93,6 +93,28 @@ class GameRepositoryTest {
             } finally { repo.close() }
         }
     }
+    @Test fun failedPurchasePreservesEstablishedSaveAndRetryUsesOldRate() = runTest {
+        val file = File(folder.newFolder(), "game.json")
+        val repo = GameRepository(file)
+        try {
+            repo.resume(1000).getOrThrow()
+            repo.dispatch(GameAction.Checkpoint, 20, 21000).getOrThrow()
+            val before = file.readText()
+            val blockedTemp = File(file.path + ".tmp")
+            assertTrue(blockedTemp.mkdir())
+            val blocker = File(blockedTemp, "blocker").apply { writeText("test") }
+            assertTrue(repo.dispatch(GameAction.BuyUpgrade, 0, 21000).isFailure)
+            assertEquals(before, file.readText())
+            assertEquals(0, repo.state.first().upgradeLevel)
+            assertTrue(repo.dispatch(GameAction.BuyUpgrade, 0, 21000).isFailure)
+            assertTrue(blocker.delete())
+            assertTrue(blockedTemp.delete())
+            val recovered = repo.resume(22000).getOrThrow()
+            assertEquals(1000L, recovered.rewardMilli)
+            assertEquals(21000L, recovered.state.balanceMilli)
+            assertEquals(1, repo.dispatch(GameAction.BuyUpgrade, 0, 22000).getOrThrow().upgradeLevel)
+        } finally { repo.close() }
+    }
     @Test fun unwritableDestinationDoesNotReportSuccessAndRetryRecovers() = runTest {
         val blocker = folder.newFile("blocked")
         val repo = GameRepository(File(blocker, "game.json"))
@@ -105,4 +127,3 @@ class GameRepositoryTest {
         } finally { repo.close() }
     }
 }
-

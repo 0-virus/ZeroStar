@@ -24,4 +24,3 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() { ads.close(); super.onDestroy() }
     override fun onStop() { game.pause(); super.onStop() }
 }
-

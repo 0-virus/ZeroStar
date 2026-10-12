@@ -5,6 +5,8 @@ import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.semantics.Role
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -23,13 +25,13 @@ import com.zerostar.game.game.GameState
         try { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(link))) }
         catch (_: ActivityNotFoundException) { Toast.makeText(context, R.string.link_error, Toast.LENGTH_SHORT).show() }
     }
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+    Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(state.soundEnabled, role = Role.Switch, onValueChange = { onAction(GameAction.SetSound(it)) }), horizontalArrangement = Arrangement.SpaceBetween) {
         Text(stringResource(R.string.sound), Modifier.weight(1f))
-        Switch(state.soundEnabled, { onAction(GameAction.SetSound(it)) })
+        Switch(state.soundEnabled, null)
     }
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+    Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(state.reduceMotion, role = Role.Switch, onValueChange = { onAction(GameAction.SetReduceMotion(it)) }), horizontalArrangement = Arrangement.SpaceBetween) {
         Text(stringResource(R.string.reduce_motion), Modifier.weight(1f))
-        Switch(state.reduceMotion, { onAction(GameAction.SetReduceMotion(it)) })
+        Switch(state.reduceMotion, null)
     }
     Text(stringResource(R.string.local_storage))
     StarButton(stringResource(R.string.privacy), {
@@ -38,7 +40,7 @@ import com.zerostar.game.game.GameState
     }, Modifier.fillMaxWidth())
     if (privacyRequired) StarButton(stringResource(R.string.ad_privacy), onPrivacy, Modifier.fillMaxWidth())
     StarButton(stringResource(R.string.licenses), {
-        detail = context.getString(R.string.license_text) + "\n\n" + listOf("IBM-Plex-Sans-KR.txt", "Press-Start-2P.txt").joinToString("\n\n") { name -> context.assets.open("licenses/$name").bufferedReader().use { it.readText() } }
+        detail = context.getString(R.string.license_text) + "\n\n" + listOf("IBM-Plex-Sans-KR.txt", "Press-Start-2P.txt", "Apache-2.0.txt").joinToString("\n\n") { name -> context.assets.open("licenses/$name").bufferedReader().use { it.readText() } }
     }, Modifier.fillMaxWidth())
     StarButton(stringResource(R.string.contact), {
         if (BuildConfig.SUPPORT_EMAIL.isNotBlank()) openLink("mailto:" + BuildConfig.SUPPORT_EMAIL)
@@ -48,7 +50,7 @@ import com.zerostar.game.game.GameState
     Spacer(Modifier.height(12.dp))
     StarButton(stringResource(R.string.reset), onReset, Modifier.fillMaxWidth())
     detail?.let { text ->
-        AlertDialog(onDismissRequest = { detail = null }, text = {
+        AlertDialog(containerColor = MaterialTheme.colorScheme.surface, shape = androidx.compose.ui.graphics.RectangleShape, onDismissRequest = { detail = null }, text = {
             androidx.compose.foundation.lazy.LazyColumn { item { Text(text) } }
         }, confirmButton = { TextButton(onClick = { detail = null }) { Text(stringResource(R.string.close)) } })
     }

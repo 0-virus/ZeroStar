@@ -17,13 +17,20 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
+internal fun ageTreatment(value: String): AgeRestrictedTreatment = when (value) {
+    "CHILD" -> AgeRestrictedTreatment.CHILD
+    "TEEN" -> AgeRestrictedTreatment.TEEN
+    "UNSPECIFIED" -> AgeRestrictedTreatment.UNSPECIFIED
+    else -> error("Unsupported age treatment")
+}
+
 private object AdsInitialization {
     private val mutex = Mutex()
     private var initialized = false
     suspend fun initialize(context: Context) = mutex.withLock {
         if (!initialized) withContext(Dispatchers.IO) {
             val config = RequestConfiguration.Builder()
-                .setAgeRestrictedTreatment(AgeRestrictedTreatment.valueOf(BuildConfig.AD_AGE_TREATMENT))
+                .setAgeRestrictedTreatment(ageTreatment(BuildConfig.AD_AGE_TREATMENT))
                 .setMaxAdContentRating(RequestConfiguration.MaxAdContentRating.MAX_AD_CONTENT_RATING_G)
                 .build()
             MobileAds.initialize(context.applicationContext, InitializationConfig.Builder(BuildConfig.ADMOB_APP_ID).setRequestConfiguration(config).build()) {}
@@ -44,6 +51,7 @@ class AdsConsent(private val activity: Activity, private val owner: LifecycleOwn
             try { AdsInitialization.initialize(activity.applicationContext); done() }
             catch (cancel: CancellationException) { throw cancel }
             catch (_: Exception) { ready = false }
+            catch (_: LinkageError) { ready = false }
         }
     }, changed = { updateReady() })
     private fun updateReady() { ready = gate.ready }
@@ -65,4 +73,3 @@ class AdsConsent(private val activity: Activity, private val owner: LifecycleOwn
     }
     fun close() { closed = true; gate.close() }
 }
-
