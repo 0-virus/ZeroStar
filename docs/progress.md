@@ -22,3 +22,11 @@
 |---|---|---|
 | M0 | 진행 | 원본 커밋, Android 설정. 빌드·설치 미검증 |
 | M1~M7 | 대기 | 순차 구현 예정 |
+
+### M1 규칙 검증
+- M0 설정 커밋 `52cb0d5`. SDK 없는 최초 Android 빌드는 환경 오류; 설치 실행 미검증.
+- 사용자 SDK 약관 동의 완료 확인 후 SDK 설치 진행. adb 연결 기기 0대.
+- 규칙/경제 6개 테스트 미구현 RED 6실패 → GREEN 6통과. 첫 완성 8,501초, 4/8/12h 도감 158,580/316,980/475,380초.
+- 명령: `.tools/gradle-8.13/bin/gradle.bat -g .tools/gradle-network -p verification test --max-workers=2`.
+- 로그: artifacts/logs/m1-red.txt, m1-green.txt. 상세: docs/qa/BALANCE.md.
+- Android 테스트는 SDK 설치 후 별도 실행. M1 핵심 규칙 검증 통과, 전체 단계 통과 표시는 Android 빌드 후 갱신.
