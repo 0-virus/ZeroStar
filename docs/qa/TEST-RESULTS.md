@@ -132,3 +132,20 @@ APK v2 debug 인증서 SHA-256: `eae79a024121d184d267bfebcd14ebba54b39df6b795ff0
 | 저장된 테스트 목적별 동의 | 회귀 이후 목적 동의11비트 모두0. 식별자·동의 문자열 원문 제외 | logs/consent-approved-purpose-summary.json |
 
 동의 수락·실제 광고 클릭·계정/출시 변경·유료 지출 없음. 첫 거부와 재열기 증거가 확보됐으므로 이전의 ‘첫 거부부터 승인 차단’ 상태는 정정한다. 정상 닫기 콜백까지의 전체 검증은 여전히 미완료다. 재개 범위와 새로운 자동 검토 사유는 [CONSENT-APPROVAL-BLOCK](CONSENT-APPROVAL-BLOCK.md).
+
+## 최신 재개 검사 및 공간 재확인 — 2026-10-13 UTC
+
+변경은 ConsentSdkProbeTest의 기존 상태 보존 옵션/SDK 사전 로딩 대기와 문서뿐이다. debug/benchmark APK의 SHA-256은 기존 `19c21e51fa8b7e50440d344b3574cc1d0891f7b98970a28a653d8082ebbc39db` / `bddd34ce51a133e4624b52c854125f5c8eeedcff33de920cbf8d0ed4e4b3a31d` 그대로다. 새 테스트 APK:1143505바이트, SHA-256 `901710c130417b7ea1b09e8a8e416abab62adbffe01245099a4f2bcc6681fa8a`. Android Debug/v2 서명과 기존 인증서 SHA-256 동일 확인(privacy-close-test-signature.txt).
+
+| 항목 | 결과 | 로컬 비추적 근거 |
+|---|---|---|
+| C: 공간·실행 | 최초5.16GiB, 기존 API36/16KB AVD 부팅26.975초 및 앱 실행 Status:ok. 종료 후5.29GiB. 공간 차단 없음 | disk-recheck-emulator.txt |
+| 최초 상태 보존 재개 | 실패1,4.785초. 기존 OBTAINED 확인 후 사전 로딩 중 SDK error3. 선택 실행 없음 | privacy-close-probe.txt |
+| 최종 빌드/unit/lint | assembleDebugAndroidTest/testDebugUnitTest/lintDebug/lintRelease 성공1분6초. unit23 실패0, lint각각 오류0/경고13 | privacy-close-final-build.txt 및 app/build 보고서 |
+| 승인된 두 번째 거부/닫기 | 재개1개 통과55.484초. afterPrivacy error=null, 목적 동의11비트 모두0 | privacy-close-final-probe.txt/status.txt/purpose-summary.json |
+| 최종 APK 일반 회귀 | core35 통과30.042초. SDK/TalkBack opt-in 제외 | privacy-close-core35.txt |
+| 정상 게임 화면 | 앱 재실행 성공, 복귀 보상 확인 후 홈·테스트 배너 표시. crash buffer 비어 있음 | privacy-close-home.png/home-ready.png/crash.txt |
+
+SDK 폼 진단과 실제 앱 재실행은 별도 검사다. 이전 첫 거부·재열기 후 타임아웃 실패를 소급해 통과시키지 않는다. 초기 명령의 `adb: unknown command am`은 shell 인자 누락으로 기기 실행 전 실패했으며 즉시 수정했다. 재부팅 직후 sdcard 캡처1회도 권한 오류로 실패해 /data/local/tmp에서 캡처했다. 제품 실패로 분류하거나 숨기지 않는다.
+
+AVD 설정은 접근성0/비행기모드0/자동시간1/글자1.0 확인 후 종료했다. 실제 NO_FILL·음성/실기기 품질·3명·실제8h/30분·성능·키/정책/계정/AAB 조건은 미검증/대기다. 원격 push·공개·지출 없음. RELEASE_READY 판정은 여전히 미충족이다.

@@ -1,6 +1,6 @@
 # 테스트 동의 화면의 자동 승인 차단
 
-2026-10-12 UTC. 부모가 사용자에게 확인할 수 있도록 실제 요청·대상·오류를 그대로 기록한다. 아래 최초 차단 이력 뒤의 **승인 후 재개 결과**가 최신 상태다. 테스트 동의 수락은 수행하지 않는다.
+2026-10-13 UTC 갱신. 최초 요청·대상·오류를 그대로 보존하며 마지막 **두 번째 선택 승인 후 정상 닫기 확인**이 최신 상태다. 해당 승인 차단은 해결됐다. 테스트 동의 수락은 수행하지 않았다.
 
 ## 차단된 대상과 동작
 
@@ -44,7 +44,7 @@ Do not bypass this rejection through a workaround or indirect execution. Continu
 
 제시 선택지: ‘테스트 화면의 거부 선택만 허용’ / ‘직접 조작하겠음’ / ‘이번 동의 화면 검증 보류’. 최초 차단 당시에는 이 질문의 답을 아직 받지 못했다(이후 승인·재개 결과는 아래 참조). 부모가 사용자에게 확인한 뒤 범위를 전달하거나 사용자가 직접 조작해야 한다. 사용자의 일반 SDK 약관 ‘동의 완료’는 이 광고 양식 선택을 위임한 것으로 해석하지 않는다. 후속 양식의 내용은 실제 표시 시 다시 확인해야 하며 확인하지 않은 버튼을 자동 선택하지 않는다.
 
-## 승인 후 재개 결과 (최신)
+## 첫 승인 후 재개 결과 (과거 실행, 실패 보존)
 
 부모가 전달한 실제 사용자 응답은2026-10-12 21:53:19 UTC의 ‘승인’이며, 대상은 이 테스트 AVD의 Do not consent 선택·거부 후 동작·개인정보 양식 재열기다. 이어 중단된 작업을 다시 진행하라는 사용자 지시도 전달받았다. 첫 재개는 도구 실행 전 중단됐고 AVD/프로세스/새 로그/클릭 결과가 없음을 확인한 뒤 시작했다. 승인 증거를 도구 인수에 넣지 않았다.
 
@@ -66,3 +66,17 @@ Do not bypass this rejection through a workaround or indirect execution. Continu
 재개가 필요하면 사용자가 **‘재열린 개인정보 선택 양식에서 두 번째 Do not consent를 선택해 닫는 동작’**까지 명시적으로 승인하거나 직접 조작해야 한다. 이 문구는 필요한 범위를 설명한 것이며 검토자가 정해 준 승인 암구호가 아니다. 기존 첫 거부 승인을 다시 요구하는 것이 아니다. 현재 작업 AVD는 종료했다.
 
 근거: artifacts/logs/consent-approved-probe.txt, consent-approved-status.txt, consent-approved-regression.txt, consent-approved-purpose-summary.json 및 artifacts/screens/consent-approved-*.png. 모두 로컬 비추적 검사 자료다.
+
+## 두 번째 선택 승인 후 정상 닫기 확인 (최신, 2026-10-13 UTC)
+
+두 번째 Do not consent 선택과 정상 복귀에 대한 사용자 별도 허용을 전달받아 해당 범위만 재개했다. 이전 양식은 종료된 상태였으므로 진단에 `probePreserveConsent=true`를 추가했다. SDK reset/첫 양식 표시를 건너뛰고 기존 OBTAINED 및 개인정보 옵션 REQUIRED 상태를 확인한다. 처음 선택을 다시 수행하지 않았다.
+
+- 최초 재개는 SDK 정보 갱신 직후 개인정보 양식을 호출해 `3: Privacy options form is being loading. Please try again later.`로 실패했다(4.785초). 양식 선택이나 클릭은 없었다. `privacy-close-probe.txt`에 실패를 보존했다.
+- [공식 SDK 문서](https://developers.google.com/admob/android/reference/privacy/com/google/android/ump/UserMessagingPlatform#showPrivacyOptionsForm(android.app.Activity,com.google.android.ump.ConsentForm.OnConsentFormDismissedListener))는 사전 로딩 중 표시 요청도 오류를 반환한다고 명시한다. 재개 진단에서만 10초 대기하도록 수정했다. 오류를 무시하거나 성공으로 바꾸지 않으며, 이후 SDK 오류는 그대로 테스트 실패다. 제품 코드는 불변이다.
+- zerostar-16kb/현재 ComponentActivity와 새 캡처 `privacy-close-final.png`의 Publisher Test Ads를 확인했다. 두 번째 선택을 위한 재시도1회가 실행됐으며 Consent 수락이나 광고 클릭은 없었다.
+- 11:16:29 UTC `status=3 form=true ads=true privacy=REQUIRED error=null`; 11:17:14 UTC `afterPrivacy status=3 ads=true privacy=REQUIRED error=null`. **재개 프로브1개 통과,55.484초**. 과거176.621초 실패 실행은 그대로 실패다.
+- 저장된 목적 동의11비트 모두0 확인. 원문 식별자/동의 문자열은 기록하지 않았다. canRequestAds=true는 개인화 동의를 뜻하지 않는다.
+- 같은 최종 테스트 APK의 core35 통과(30.042초), 게임 재실행 후 복귀 팝업 확인·닫기와 정상 홈/테스트 배너 확인. 진단은 빈 ComponentActivity를 사용하므로 제품 화면 자동 복귀와 동일한 검사라고 주장하지 않는다. 제품 개인정보 진입 callback은 core 회귀에서 검증했다.
+- crash buffer 비어 있음. 검사 종료 후 접근성0/비행기모드0/자동시간1/font_scale1.0 확인, 작업 AVD 종료. 이 선택의 승인 차단은 해결됐으며 추가 승인 대기가 아니다.
+
+근거: artifacts/logs/privacy-close-final-probe.txt, privacy-close-final-status.txt, privacy-close-core35.txt, privacy-close-purpose-summary.json, privacy-close-final-build.txt, privacy-close-crash.txt 및 artifacts/screens/privacy-close-final.png, privacy-close-home.png, privacy-close-home-ready.png. 실제 NO_FILL·음성·실기기·출시 계정/정책 검증은 별도이며 RELEASE_READY 미충족이다.

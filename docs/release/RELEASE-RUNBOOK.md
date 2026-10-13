@@ -89,7 +89,7 @@ python tools/check-ad-lifecycle.py
 
 파이썬 도구는 전용 AVD 이름/qemu/debug 패키지를 검사하며 게임 테스트 데이터를 덮어쓴다. 개인 기기에 사용하지 않는다. 광고 도구는 zerostar-api26 전용이다. root 가능한 전용 이미지가 필요하고 시간·네트워크 설정을 복구한다.
 
-ConsentSdkProbeTest는 probeGeography=EEA 또는 DISABLED, probeExpectError=true, probeShowForm=true, probeShowPrivacy=true를 명시하는 별도 SDK 진단이다. 실제 SDK가 로그에 안내한 테스트 기기 hash는 비추적 로컬 입력만 사용한다. 동의 선택은 사용자 직접 조작 또는 명시적 허용 경계에서만 수행한다. 사용자 승인 후 첫 거부와 개인정보 양식 재열기는 확인했다. 현재 재열린 양식의 두 번째 거부/닫기만 자동 승인 검토에 차단됐다. 이를 기존 승인의 재시도로 임의 확대하지 말고 두 번째 선택의 명시 허용 또는 직접 조작을 기다린다. 타임아웃/중단을 통과로 기록하지 않는다.
+ConsentSdkProbeTest는 probeGeography=EEA 또는 DISABLED, probeExpectError=true, probeShowForm=true, probeShowPrivacy=true를 명시하는 별도 SDK 진단이다. 실제 SDK가 로그에 안내한 테스트 기기 hash는 비추적 로컬 입력만 사용한다. 동의 선택은 사용자 직접 조작 또는 명시적 허용 경계에서만 수행한다. 2026-10-13에는 두 번째 거부 선택의 별도 허용 후 probePreserveConsent=true, probeGeography=EEA, probeShowPrivacy=true로 기존 상태를 보존해 정상 닫기까지 통과했다. probeShowForm은 생략해 첫 선택을 반복하지 않았다. 보존 모드는 OBTAINED/개인정보 옵션 REQUIRED를 확인하고, SDK 자동 사전 로딩을 10초 기다린다. 이후 로딩/표시 오류는 여전히 실패로 처리한다. 과거 타임아웃과 최초 사전 로딩 실패는 성공으로 바꾸지 않는다.
 
 AccessibilityServiceProbeTest는 probeTalkBack=true로 명시하며, TalkBack을 켠 전용 AVD에서만 실행한다. 공식 Alt+Right를 root sendevent 커널 키보드 경로로 전달해 실제 accessibility focus를 읽는다. shell input은 접근성 필터를 건너뛰므로 이 검사의 대체 입력으로 사용하지 않는다. 기존 shell input 경로의 초점 실패는 원인을 찾아 수정했고, 홈/설정/도감 실제 초점 검사를 통과했다. `probeKeyboardDevice=/dev/input/event1`도 필요하며 `getevent -pl`의 실제 AT Translated Set 2 keyboard 경로를 먼저 확인한다. root 가능한 전용 qemu만 허용하고 sysfs 장치 이름을 확인한다. 기본 core에서 제외했다는 이유로 접근성 완료라고 보고하지 않는다. 실행 뒤 enabled_accessibility_services/accessibility_enabled를 기존 값으로 복구한다.
 

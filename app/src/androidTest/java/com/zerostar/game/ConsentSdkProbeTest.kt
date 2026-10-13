@@ -20,6 +20,7 @@ class ConsentSdkProbeTest {
         val args = InstrumentationRegistry.getArguments()
         assumeTrue("Optional SDK network probe requires probeGeography", args.containsKey("probeGeography"))
         val geography = args.getString("probeGeography")!!
+        val preserveConsent = args.getString("probePreserveConsent") == "true"
         val done = CountDownLatch(1)
         var error: String? = null
         var status = ConsentInformation.ConsentStatus.UNKNOWN
@@ -29,7 +30,7 @@ class ConsentSdkProbeTest {
         ActivityScenario.launch(ComponentActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
                 val info = UserMessagingPlatform.getConsentInformation(activity)
-                info.reset()
+                if (!preserveConsent) info.reset()
                 val debug = ConsentDebugSettings.Builder(activity)
                     .setDebugGeography(if (geography == "EEA") ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_EEA else ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_DISABLED)
                 args.getString("probeDeviceHash")?.let { debug.addTestDeviceHashedId(it) }
@@ -56,9 +57,15 @@ class ConsentSdkProbeTest {
             } else {
                 assertNull("SDK consent update error", error)
                 if (geography == "EEA") {
-                    assertEquals(ConsentInformation.ConsentStatus.REQUIRED, status)
                     assertTrue("A test message must be configured before testing the consent form", available)
-                    assertFalse(allowed)
+                    if (preserveConsent) {
+                        assertEquals("Resume only an existing consent decision; do not repeat the first choice",
+                            ConsentInformation.ConsentStatus.OBTAINED, status)
+                        assertEquals(ConsentInformation.PrivacyOptionsRequirementStatus.REQUIRED, privacy)
+                    } else {
+                        assertEquals(ConsentInformation.ConsentStatus.REQUIRED, status)
+                        assertFalse(allowed)
+                    }
                 } else assertTrue(allowed)
             }
             if (args.getString("probeShowForm") == "true" && error == null) {
@@ -75,6 +82,9 @@ class ConsentSdkProbeTest {
                 assertNull(error)
             }
             if (args.getString("probeShowPrivacy") == "true" && error == null) {
+                // A resumed probe skips the first form, so allow SDK privacy-form preloading.
+                // No public preload-ready callback exists; a load/show error still fails below.
+                if (preserveConsent) Thread.sleep(10_000)
                 val dismissed = CountDownLatch(1)
                 scenario.onActivity { activity ->
                     UserMessagingPlatform.showPrivacyOptionsForm(activity) { failure ->
