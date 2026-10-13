@@ -135,6 +135,8 @@ APK v2 debug 인증서 SHA-256: `eae79a024121d184d267bfebcd14ebba54b39df6b795ff0
 
 ## 최신 재개 검사 및 공간 재확인 — 2026-10-13 UTC
 
+검증된 소스 커밋: `3a05981`. 아래 APK는 이 커밋의 테스트 소스로 빌드했다. 이후 문서의 커밋 연결 기록은 APK에 영향을 주지 않는다.
+
 변경은 ConsentSdkProbeTest의 기존 상태 보존 옵션/SDK 사전 로딩 대기와 문서뿐이다. debug/benchmark APK의 SHA-256은 기존 `19c21e51fa8b7e50440d344b3574cc1d0891f7b98970a28a653d8082ebbc39db` / `bddd34ce51a133e4624b52c854125f5c8eeedcff33de920cbf8d0ed4e4b3a31d` 그대로다. 새 테스트 APK:1143505바이트, SHA-256 `901710c130417b7ea1b09e8a8e416abab62adbffe01245099a4f2bcc6681fa8a`. Android Debug/v2 서명과 기존 인증서 SHA-256 동일 확인(privacy-close-test-signature.txt).
 
 | 항목 | 결과 | 로컬 비추적 근거 |
